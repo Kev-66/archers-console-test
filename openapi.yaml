@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: Archers Console GitHub Issue State
+  version: 0.1.0
+  description: >
+    Tiny proof-of-concept action that reads and updates one GitHub issue used
+    as shared state for the St. Louis Archers console latency test.
+servers:
+  - url: https://api.github.com
+paths:
+  /repos/Kev-66/archers-console-test/issues/1:
+    get:
+      operationId: getArchersTestState
+      summary: Read the current Archers test state
+      description: Read issue 1 and return its title, body, and update timestamp.
+      x-openai-isConsequential: false
+      responses:
+        "200":
+          description: Current test state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  body:
+                    type: string
+                  updated_at:
+                    type: string
+    patch:
+      operationId: updateArchersTestState
+      summary: Update the Archers test state
+      description: >
+        Replace the body of issue 1 with a compact JSON object. Preserve the
+        user's exact words when saving any supplied dialogue.
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body
+              properties:
+                title:
+                  type: string
+                  description: Optional issue title.
+                body:
+                  type: string
+                  description: >
+                    JSON serialized as a string. Include version, message,
+                    sent_at, and any test notes.
+      responses:
+        "200":
+          description: Updated test state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  body:
+                    type: string
+                  updated_at:
+                    type: string
