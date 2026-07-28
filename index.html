@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Archers Console Proof of Concept</title>
+  <title>Archers Console Realtime Test</title>
   <style>
     :root {
       color-scheme: dark;
@@ -21,7 +21,7 @@
       background: #111a24;
       box-shadow: 0 20px 60px rgba(0,0,0,.28);
     }
-    h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 4vw, 2.4rem); }
+    h1 { margin: 10px 0 8px; font-size: clamp(1.6rem, 4vw, 2.4rem); }
     p { color: #aebdca; line-height: 1.5; }
     .grid {
       display: grid;
@@ -61,15 +61,14 @@
       color: #eaf2f8;
     }
     .small { font-size: .86rem; color: #7f94a6; }
-    code { color: #c9e7ff; }
   </style>
 </head>
 <body>
   <main>
     <section class="panel">
-      <div class="status"><span id="dot" class="dot"></span><span id="status">Waiting for first poll…</span></div>
-      <h1>St. Louis Archers Console Test</h1>
-      <p>This page polls one public GitHub issue. When the custom GPT updates that issue, this screen changes automatically. No refresh button required.</p>
+      <div class="status"><span id="dot" class="dot"></span><span id="status">Connecting to Supabase…</span></div>
+      <h1>St. Louis Archers Realtime Test</h1>
+      <p>This console listens for database changes through Supabase Realtime. Once connected, updates should appear without refreshing or repeated polling.</p>
 
       <div class="grid">
         <div class="metric">
@@ -77,7 +76,7 @@
           <div id="version" class="value">—</div>
         </div>
         <div class="metric">
-          <div class="label">Issue updated</div>
+          <div class="label">Database updated</div>
           <div id="updated" class="value">—</div>
         </div>
         <div class="metric">
@@ -87,25 +86,24 @@
       </div>
 
       <div class="label">Current shared state</div>
-      <pre id="state">Waiting for GitHub Issue #1…</pre>
+      <pre id="state">Waiting for Supabase row “archers-test”…</pre>
 
-      <p class="small">Polling every <span id="pollSeconds">1</span> second. API endpoint: <code id="endpoint"></code></p>
+      <p class="small">Connection type: one initial read, then live WebSocket events. No one-second polling.</p>
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const CONFIG = {
-      owner: "Kev-66",
-      repo: "archers-console-test",
-      issueNumber: 1,
-      pollMs: 1000
-    };
+    const SUPABASE_URL = "https://oqbylwlkrabxvpdhugrf.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_z-EjW-S0x7GZH2VREEaXAw_NOOrbH-m";
 
-    const endpoint = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/issues/${CONFIG.issueNumber}`;
-    document.getElementById("endpoint").textContent = endpoint;
-    document.getElementById("pollSeconds").textContent = String(CONFIG.pollMs / 1000);
-
-    let lastUpdatedAt = null;
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    });
 
     function setStatus(text, kind) {
       document.getElementById("status").textContent = text;
@@ -113,45 +111,54 @@
       dot.className = "dot" + (kind ? ` ${kind}` : "");
     }
 
-    async function poll() {
-      try {
-        const started = performance.now();
-        const response = await fetch(endpoint, {
-          headers: { "Accept": "application/vnd.github+json" },
-          cache: "no-store"
-        });
-
-        if (!response.ok) {
-          throw new Error(`GitHub returned ${response.status}`);
-        }
-
-        const issue = await response.json();
-        const receivedAt = new Date();
-        let parsed;
-
-        try {
-          parsed = JSON.parse(issue.body || "{}");
-        } catch {
-          parsed = { message: issue.body || "(empty issue body)" };
-        }
-
-        document.getElementById("version").textContent = parsed.version ?? "—";
-        document.getElementById("updated").textContent =
-          issue.updated_at ? new Date(issue.updated_at).toLocaleTimeString() : "—";
-        document.getElementById("received").textContent = receivedAt.toLocaleTimeString();
-        document.getElementById("state").textContent = JSON.stringify(parsed, null, 2);
-
-        const changed = lastUpdatedAt && lastUpdatedAt !== issue.updated_at;
-        lastUpdatedAt = issue.updated_at;
-        const elapsed = Math.round(performance.now() - started);
-        setStatus(changed ? `Update received in ${elapsed} ms` : `Connected · last poll ${elapsed} ms`, "ok");
-      } catch (error) {
-        setStatus(error.message, "bad");
-      }
+    function render(row, source) {
+      if (!row) return;
+      const receivedAt = new Date();
+      document.getElementById("version").textContent = row.version ?? "—";
+      document.getElementById("updated").textContent = row.updated_at
+        ? new Date(row.updated_at).toLocaleTimeString()
+        : "—";
+      document.getElementById("received").textContent = receivedAt.toLocaleTimeString();
+      document.getElementById("state").textContent = JSON.stringify(row, null, 2);
+      setStatus(source === "realtime" ? "Realtime update received" : "Connected to Supabase Realtime", "ok");
     }
 
-    poll();
-    setInterval(poll, CONFIG.pollMs);
+    async function start() {
+      const { data, error } = await client
+        .from("archers_test_state")
+        .select("id, version, message, note, sent_at, updated_at")
+        .eq("id", "archers-test")
+        .single();
+
+      if (error) {
+        setStatus(`Initial read failed: ${error.message}`, "bad");
+        return;
+      }
+
+      render(data, "initial");
+
+      client
+        .channel("archers-test-state")
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "archers_test_state",
+            filter: "id=eq.archers-test"
+          },
+          (payload) => render(payload.new, "realtime")
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            setStatus("Connected to Supabase Realtime", "ok");
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            setStatus(`Realtime connection: ${status}`, "bad");
+          }
+        });
+    }
+
+    start().catch((error) => setStatus(error.message, "bad"));
   </script>
 </body>
 </html>
