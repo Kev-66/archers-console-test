@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
-  title: St. Louis Archers Franchise Console
-  version: 1.0.1-phase1
+  title: Draft a Dynasty Unified Operations
+  version: 3.0.0
   description: >
-    Phase One bridge for reading and updating the canonical St. Louis Archers
-    franchise state through a protected Supabase Edge Function.
+    Protected operational bridge for the St. Louis Archers and the full Collegiate
+    Football Federation. Reads franchise, league, live game, resource, and audit
+    state. Executes validated versioned commands without exposing arbitrary SQL.
 servers:
   - url: https://oqbylwlkrabxvpdhugrf.supabase.co/functions/v1
 components:
@@ -14,74 +15,87 @@ components:
       in: header
       name: x-archers-key
   schemas:
-    CanonEvent:
+    UnifiedReadResponse:
       type: object
-      properties:
-        event_id:
-          type: integer
-        state_version:
-          type: integer
-        event_type:
-          type: string
-        summary:
-          type: string
-        exact_kevin_text:
-          type:
-            - string
-            - "null"
-        source_label:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-    FranchiseState:
-      type: object
-      properties:
-        id:
-          type: string
-        version:
-          type: integer
-        state:
-          type: object
-          additionalProperties: true
-        source_checkpoint_id:
-          type: string
-        seal_status:
-          type: string
-        updated_at:
-          type: string
-          format: date-time
-        recent_events:
-          type: array
-          items:
-            $ref: "#/components/schemas/CanonEvent"
-    StatePatchRequest:
+      additionalProperties: true
+    UnifiedOperationRequest:
       type: object
       additionalProperties: false
       required:
-        - event_type
+        - operation
+        - payload_json
+        - idempotency_key
         - summary
-        - patch_json
         - source_label
       properties:
-        event_type:
+        operation:
           type: string
-          description: Compact machine-friendly category such as decision, roster, medical, scene_closeout, correction, checkpoint, game, culture, or system.
-        summary:
-          type: string
-          minLength: 1
-          description: Concise factual description of what became canon.
-        patch_json:
+          enum:
+            - patch_franchise_state
+            - upsert_resource
+            - bulk_upsert_resources
+            - archive_resource
+            - upsert_team
+            - upsert_game
+            - bulk_upsert_games
+            - upsert_schedule
+            - start_game
+            - update_live_game
+            - record_drive
+            - record_game_event
+            - upsert_team_stats
+            - upsert_player_stats
+            - finalize_game
+            - create_snapshot
+          description: >
+            Validated operation to perform. Never invent a new operation name and
+            never attempt to send SQL.
+        resource_type:
+          type:
+            - string
+            - "null"
+          description: >
+            Required for generic resources. Examples include player, contract,
+            injury, staff_member, draft_pick, depth_chart, transaction, promise,
+            rivalry, award, league_rule, or any new lowercase underscore resource type.
+        resource_id:
+          type:
+            - string
+            - "null"
+          description: Stable ID for the resource or game being changed.
+        payload_json:
           type: string
           minLength: 2
           description: >
-            A valid JSON string containing only the smallest nested state delta.
-            Do not resend the full state. Example: {"canon":{"sync_status":"Phase One test passed"}}
+            One valid JSON-object string containing the operation fields. Include
+            expected_state_version inside this object for consequential writes when
+            the current franchise state version is known. Include only factual changes.
+        expected_version:
+          type:
+            - integer
+            - "null"
+          minimum: 0
+          description: >
+            Current version of the specific existing resource being updated. Required
+            for existing generic resources, teams, live games, and drive/event writes.
+        idempotency_key:
+          type: string
+          minLength: 4
+          maxLength: 180
+          description: >
+            Stable unique key for this exact intended write. Reuse the same key only
+            when retrying the same write. Never reuse it for a different event.
+        summary:
+          type: string
+          minLength: 1
+          description: Concise factual description of what becomes canon.
         exact_kevin_text:
           type:
             - string
             - "null"
-          description: Kevin Dorey's exact user-supplied words only. Omit or use null when Kevin did not speak.
+          description: >
+            Kevin Dorey's exact user-supplied words only. Use null when Kevin did not
+            provide exact spoken or decision text.
         source_label:
           type: string
           enum:
@@ -90,54 +104,115 @@ components:
             - CHECKPOINT
             - CORRECTION
             - SYSTEM
+        dry_run:
+          type: boolean
+          default: false
+          description: >
+            When true, validate and preview the normalized request without writing.
+            A later consequential call with dry_run false is required to execute it.
+    UnifiedOperationResponse:
+      type: object
+      additionalProperties: true
 security:
   - archersActionKey: []
 paths:
   /archers-franchise:
     get:
-      operationId: getArchersFranchiseState
-      summary: Read the current canonical Archers franchise state
+      operationId: getArchersOperationsState
+      summary: Read franchise, league, game, resource, or audit state
       description: >
-        Read Phase One session state, exact continuation point, injuries, open
-        decisions, roster/elevation status, canon guardrails, and recent events.
+        Always read the relevant scope before a fact-sensitive continuation or
+        consequential write. Snapshot is the default full operational preflight.
       x-openai-isConsequential: false
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            default: snapshot
+            enum:
+              - snapshot
+              - league
+              - game
+              - resources
+              - audit
+              - capabilities
+          description: Operational area to read.
+        - name: season
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 2026
+        - name: week
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Optional league week filter.
+        - name: game_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Required when scope is game.
+        - name: resource_type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional resource filter when scope is resources.
+        - name: resource_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional resource filter when scope is resources.
+        - name: include_archived
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+          description: Audit-row limit when scope is audit.
       responses:
         "200":
-          description: Current franchise state
+          description: Requested operational state
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FranchiseState"
+                $ref: "#/components/schemas/UnifiedReadResponse"
     post:
-      operationId: applyArchersFranchiseUpdate
-      summary: Save one bundled canonical Archers update
+      operationId: executeArchersOperation
+      summary: Execute one validated, versioned dynasty operation
       description: >
-        Apply a minimal state patch and append an event to the canon ledger.
-        Bundle related changes from one completed scene or drive into one call.
+        Performs one protected operational write and records a canon event and audit
+        entry. The backend enforces idempotency, optimistic concurrency, soft archive,
+        identity guardrails, and atomic finalization. Use bulk operations for complete
+        league slates or related resource imports. Never use this endpoint for routine
+        discussion or hypotheticals.
       x-openai-isConsequential: true
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StatePatchRequest"
+              $ref: "#/components/schemas/UnifiedOperationRequest"
       responses:
         "200":
-          description: Updated franchise state version
+          description: Successful operation and resulting canon version
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  version:
-                    type: integer
-                  state:
-                    type: object
-                    additionalProperties: true
-                  updated_at:
-                    type: string
-                    format: date-time
-                  event_id:
-                    type: integer
+                $ref: "#/components/schemas/UnifiedOperationResponse"
+        "409":
+          description: Stale version, duplicate conflict, locked final, or validation rejection
