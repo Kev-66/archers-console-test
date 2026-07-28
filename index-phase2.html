@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>St. Louis Archers Franchise Console</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #06100e;
+      --panel: #0d1b18;
+      --panel-2: #11231e;
+      --line: #274a40;
+      --line-soft: rgba(39,74,64,.65);
+      --cream: #f3ecd9;
+      --muted: #a7bcb3;
+      --green: #55d39a;
+      --gold: #e0bb62;
+      --amber: #e6b964;
+      --red: #ef7d79;
+      --ink: #07120f;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% -10%, rgba(45,104,82,.24), transparent 35%),
+        radial-gradient(circle at 85% 0%, rgba(111,83,30,.13), transparent 30%),
+        var(--bg);
+      color: var(--cream);
+    }
+    button { font: inherit; }
+    main { width: min(1280px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 64px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+    h1 { margin: 8px 0 4px; font-size: clamp(2.15rem, 5vw, 3.65rem); line-height: .98; letter-spacing: -.035em; }
+    h2 { margin: 0 0 14px; color: var(--gold); font-size: 1.02rem; text-transform: uppercase; letter-spacing: .1em; }
+    h3 { margin: 0; font-size: 1rem; }
+    p { color: var(--muted); line-height: 1.55; }
+    .eyebrow { color: var(--gold); text-transform: uppercase; letter-spacing: .16em; font-size: .75rem; font-weight: 900; }
+    .status { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; background: rgba(13,27,24,.88); color: var(--muted); white-space: nowrap; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); }
+    .dot.ok { background: var(--green); }
+    .dot.bad { background: var(--red); }
+
+    .tabs-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin: 22px 0 18px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(7,18,15,.92);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 16px 45px rgba(0,0,0,.25);
+    }
+    .tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; }
+    .tab-button {
+      border: 0;
+      border-radius: 11px;
+      padding: 10px 14px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: .18s ease;
+    }
+    .tab-button:hover { color: var(--cream); background: rgba(39,74,64,.28); }
+    .tab-button.active { color: var(--ink); background: var(--gold); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: appear .18s ease; }
+    @keyframes appear { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 0 0 16px; }
+    .metric, .panel {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18,36,31,.97), rgba(11,24,20,.97));
+      border-radius: 18px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.18);
+    }
+    .metric { padding: 16px; min-height: 106px; }
+    .label { color: #8fa99f; text-transform: uppercase; letter-spacing: .1em; font-size: .71rem; }
+    .value { margin-top: 8px; font-size: 1.35rem; font-weight: 900; overflow-wrap: anywhere; }
+    .subvalue { margin-top: 5px; color: var(--muted); font-size: .87rem; line-height: 1.35; }
+    .layout { display: grid; grid-template-columns: 1.18fr .82fr; gap: 16px; }
+    .stack { display: grid; gap: 16px; align-content: start; }
+    .panel { padding: 20px; }
+    .panel-note { margin: -4px 0 14px; font-size: .9rem; }
+    .continuation { font-size: 1.07rem; line-height: 1.62; color: var(--cream); margin: 0; }
+    .list { display: grid; gap: 10px; }
+    .item { border: 1px solid var(--line-soft); border-radius: 13px; background: rgba(5,16,13,.5); padding: 13px; }
+    .item-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .item-title { font-weight: 850; }
+    .item-note { margin-top: 5px; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+    .pill { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; font-size: .68rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+    .pill.good { color: var(--green); }
+    .pill.warn { color: var(--amber); }
+    .pill.bad { color: var(--red); }
+    .guardrail { border-left: 3px solid var(--gold); padding-left: 12px; color: var(--cream); line-height: 1.55; }
+    .meta { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; font-size: .9rem; }
+    .meta dt { color: var(--muted); }
+    .meta dd { margin: 0; text-align: right; font-weight: 800; }
+    .empty { color: var(--muted); font-style: italic; }
+
+    .section-head { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin: 4px 0 14px; }
+    .section-head h2 { margin: 0; }
+    .section-head p { margin: 0; font-size: .88rem; }
+    .league-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line-soft); border-radius: 14px; }
+    table { width: 100%; border-collapse: collapse; min-width: 650px; }
+    th, td { padding: 12px 13px; border-bottom: 1px solid var(--line-soft); text-align: right; font-size: .9rem; }
+    th { color: #91aaa1; background: rgba(4,14,12,.65); text-transform: uppercase; letter-spacing: .07em; font-size: .7rem; }
+    th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+    tr:last-child td { border-bottom: 0; }
+    tr.archers-row td { background: rgba(224,187,98,.11); color: var(--cream); font-weight: 800; }
+    .rank { color: var(--gold); width: 52px; }
+    .scoreboard { display: grid; gap: 10px; }
+    .score-game { border: 1px solid var(--line-soft); border-radius: 13px; padding: 13px; background: rgba(5,16,13,.55); }
+    .score-line { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 3px 0; }
+    .winner { font-weight: 900; color: var(--cream); }
+    .loser { color: var(--muted); }
+    .score { font-variant-numeric: tabular-nums; font-weight: 900; }
+    .ot { color: var(--gold); font-size: .72rem; font-weight: 900; margin-left: 6px; }
+    .alignment-note { border: 1px dashed var(--line); border-radius: 14px; padding: 15px; background: rgba(224,187,98,.055); }
+
+    .schedule-list { display: grid; gap: 9px; }
+    .schedule-row { display: grid; grid-template-columns: 62px 115px minmax(180px,1fr) 90px 95px minmax(120px, .7fr); gap: 10px; align-items: center; border: 1px solid var(--line-soft); border-radius: 13px; padding: 12px; background: rgba(5,16,13,.52); }
+    .schedule-row.next { border-color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); }
+    .schedule-row.final { opacity: .9; }
+    .schedule-week { color: var(--gold); font-weight: 900; }
+    .schedule-opponent { font-weight: 850; }
+    .schedule-result { font-weight: 900; text-align: right; }
+    .schedule-note { color: var(--muted); font-size: .83rem; }
+
+    .placeholder {
+      display: grid;
+      place-items: center;
+      min-height: 420px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 22px;
+      background: radial-gradient(circle at center, rgba(39,74,64,.18), transparent 65%);
+      padding: 32px;
+    }
+    .placeholder-mark { font-size: 3rem; }
+    .placeholder h2 { margin-top: 14px; font-size: 1.25rem; }
+    .placeholder p { max-width: 650px; margin: 0 auto; }
+
+    footer { margin-top: 20px; color: #789187; font-size: .81rem; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+    @media (max-width: 980px) {
+      header { display: block; }
+      .status { margin-top: 14px; }
+      .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .layout, .league-grid { grid-template-columns: 1fr; }
+      .schedule-row { grid-template-columns: 52px 100px 1fr 80px; }
+      .schedule-row > :nth-child(5), .schedule-row > :nth-child(6) { grid-column: 3 / -1; text-align: left; }
+    }
+    @media (max-width: 600px) {
+      main { width: min(100% - 20px, 1280px); padding-top: 18px; }
+      .metrics { grid-template-columns: 1fr; }
+      .metric { min-height: 0; }
+      .schedule-row { grid-template-columns: 48px 1fr; }
+      .schedule-row > * { grid-column: auto !important; text-align: left !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <div class="eyebrow">Draft a Dynasty • Franchise Operations</div>
+        <h1>St. Louis Archers</h1>
+        <p style="margin:8px 0 0">Live Canon, League and Game Operations Console</p>
+      </div>
+      <div class="status"><span id="dot" class="dot"></span><span id="connection">Connecting to Archers Realtime…</span></div>
+    </header>
+
+    <div class="tabs-wrap">
+      <nav class="tabs" aria-label="Console sections">
+        <button class="tab-button active" data-tab="overview">Overview</button>
+        <button class="tab-button" data-tab="league">League</button>
+        <button class="tab-button" data-tab="gameday">Game Day</button>
+        <button class="tab-button" data-tab="roster">Roster</button>
+        <button class="tab-button" data-tab="schedule">Schedule</button>
+        <button class="tab-button" data-tab="archive">Archive</button>
+      </nav>
+    </div>
+
+    <section id="overview" class="tab-panel active">
+      <section class="metrics">
+        <div class="metric"><div class="label">Record</div><div id="record" class="value">—</div><div id="standing" class="subvalue">—</div></div>
+        <div class="metric"><div class="label">Current Week</div><div id="week" class="value">—</div><div id="day" class="subvalue">—</div></div>
+        <div class="metric"><div class="label">Next Opponent</div><div id="opponent" class="value">—</div><div id="kickoff" class="subvalue">—</div></div>
+        <div class="metric"><div class="label">State Version</div><div id="version" class="value">—</div><div id="updated" class="subvalue">—</div></div>
+      </section>
+
+      <section class="layout">
+        <div class="stack">
+          <article class="panel">
+            <h2>Exact Continuation Point</h2>
+            <p id="continuation" class="continuation">Loading canonical state…</p>
+          </article>
+          <article class="panel">
+            <h2>Open Decisions</h2>
+            <div id="decisions" class="list"><div class="empty">Loading…</div></div>
+          </article>
+          <article class="panel">
+            <h2>Medical and Availability</h2>
+            <div id="overviewMedical" class="list"><div class="empty">Loading…</div></div>
+          </article>
+        </div>
+        <div class="stack">
+          <article class="panel">
+            <h2>Canon Lock</h2>
+            <div id="kevinLock" class="guardrail">Loading guardrail…</div>
+            <div id="dialogueRule" class="guardrail" style="margin-top:12px"></div>
+          </article>
+          <article class="panel">
+            <h2>Central Division Snapshot</h2>
+            <div id="overviewCentral" class="list"><div class="empty">Loading standings…</div></div>
+          </article>
+          <article class="panel">
+            <h2>Governing Record</h2>
+            <dl class="meta">
+              <dt>Constitution</dt><dd id="constitution">—</dd>
+              <dt>Bible</dt><dd id="bible">—</dd>
+              <dt>Checkpoint</dt><dd id="checkpoint">—</dd>
+              <dt>Seal</dt><dd id="seal">—</dd>
+            </dl>
+          </article>
+          <article class="panel">
+            <h2>Culture and Resources</h2>
+            <dl class="meta">
+              <dt>Victory Bow</dt><dd id="bow">—</dd>
+              <dt>Internal standard</dt><dd id="standard">—</dd>
+              <dt>Offensive term</dt><dd id="term">—</dd>
+              <dt>Practical cap flexibility</dt><dd id="cap">—</dd>
+            </dl>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section id="league" class="tab-panel">
+      <div class="section-head">
+        <div><h2>Collegiate Football Federation</h2><p>Confirmed standings and the latest preserved league scoreboard.</p></div>
+      </div>
+      <section class="league-grid">
+        <article class="panel">
+          <h2>Central Division • Through Week Two</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Rank</th><th>Team</th><th>W-L-T</th><th>DIV</th><th>PF</th><th>PA</th><th>DIFF</th></tr></thead>
+              <tbody id="centralTable"><tr><td colspan="7" class="empty">Loading standings…</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+        <div class="stack">
+          <article class="panel">
+            <h2>Week Two Scoreboard</h2>
+            <div id="weekTwoScores" class="scoreboard"><div class="empty">Loading scores…</div></div>
+          </article>
+          <article class="panel">
+            <h2>League Alignment Status</h2>
+            <div class="alignment-note">
+              <div class="item-title"><span id="confirmedTeams">—</span> confirmed Central clubs • <span id="knownTeams">—</span> known CFF clubs</div>
+              <div class="item-note">The Central Division is fully locked from the sealed checkpoint. Other conference and division assignments remain unfilled until a controlling source or Kevin-approved alignment establishes them. The console will not invent the missing map.</div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section id="gameday" class="tab-panel">
+      <div class="placeholder">
+        <div>
+          <div class="placeholder-mark">🏟️</div>
+          <h2>Game Day Module Reserved</h2>
+          <p>The tab framework is live. The next game-mode expansion will add the scoreboard, quarter and clock, possession, field position, drive log, scoring summary, injuries, turnovers and reconciled statistics.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="roster" class="tab-panel">
+      <section class="layout">
+        <div class="stack">
+          <article class="panel">
+            <h2>Roster and Elevations</h2>
+            <dl class="meta">
+              <dt>Active roster</dt><dd id="activeCount">—</dd>
+              <dt>Practice squad</dt><dd id="psCount">—</dd>
+              <dt>Week Three protections</dt><dd id="protections">—</dd>
+            </dl>
+            <div id="elevations" class="list" style="margin-top:14px"><div class="empty">Loading…</div></div>
+          </article>
+          <article class="panel">
+            <h2>Personnel Decisions</h2>
+            <div id="rosterDecisions" class="list"><div class="empty">Loading…</div></div>
+          </article>
+        </div>
+        <div class="stack">
+          <article class="panel">
+            <h2>Medical Board</h2>
+            <div id="rosterMedical" class="list"><div class="empty">Loading…</div></div>
+          </article>
+          <article class="panel">
+            <h2>Evidence Boundaries</h2>
+            <div id="boundaries" class="list"><div class="empty">Loading…</div></div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section id="schedule" class="tab-panel">
+      <article class="panel">
+        <div class="section-head"><div><h2>2026 Archers Schedule</h2><p>All kickoff times are Central.</p></div></div>
+        <div id="scheduleList" class="schedule-list"><div class="empty">Loading schedule…</div></div>
+      </article>
+    </section>
+
+    <section id="archive" class="tab-panel">
+      <section class="layout">
+        <article class="panel">
+          <h2>Recent Canon Activity</h2>
+          <div id="events" class="list"><div class="empty">Loading…</div></div>
+        </article>
+        <div class="stack">
+          <article class="panel">
+            <h2>Archive Status</h2>
+            <dl class="meta">
+              <dt>Current state version</dt><dd id="archiveVersion">—</dd>
+              <dt>Checkpoint</dt><dd id="archiveCheckpoint">—</dd>
+              <dt>Latest event</dt><dd id="latestEvent">—</dd>
+            </dl>
+          </article>
+          <article class="panel">
+            <h2>Future Archive Rooms</h2>
+            <div class="list">
+              <div class="item"><div class="item-title">Final Game Books</div><div class="item-note">Official score, full statistical ledger and eligibility lock.</div></div>
+              <div class="item"><div class="item-title">Transactions and Contracts</div><div class="item-note">Permanent personnel history and cap consequences.</div></div>
+              <div class="item"><div class="item-title">Dynasty History</div><div class="item-note">Awards, records, playoff runs, rivalries and franchise milestones.</div></div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <footer>
+      <span>One initial read, then live WebSocket events. No repeated polling.</span>
+      <span id="received">Console waiting for state…</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://oqbylwlkrabxvpdhugrf.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_z-EjW-S0x7GZH2VREEaXAw_NOOrbH-m";
+    const FRANCHISE_ID = "stl-2026";
+    const SEASON = 2026;
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+
+    let recentEvents = [];
+    let teamMap = new Map();
+    let currentStateRow = null;
+
+    const escapeHtml = (value) => String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+    const signed = (value) => Number(value) > 0 ? `+${value}` : String(value ?? 0);
+    const recordText = (row) => `${row.wins ?? 0}-${row.losses ?? 0}${row.ties ? `-${row.ties}` : ""}`;
+    const divisionText = (row) => `${row.division_wins ?? 0}-${row.division_losses ?? 0}${row.division_ties ? `-${row.division_ties}` : ""}`;
+
+    function setConnection(text, kind) {
+      document.getElementById("connection").textContent = text;
+      document.getElementById("dot").className = "dot" + (kind ? ` ${kind}` : "");
+    }
+
+    function pillClass(status) {
+      const value = String(status ?? "").toLowerCase();
+      if (value.includes("expected") || value.includes("passed") || value.includes("synced") || value.includes("final")) return "good";
+      if (value.includes("question") || value.includes("monitor") || value.includes("next")) return "warn";
+      if (value.includes("out") || value.includes("doubt")) return "bad";
+      return "";
+    }
+
+    function setTab(tabName, updateHash = true) {
+      const valid = [...document.querySelectorAll(".tab-panel")].some((node) => node.id === tabName);
+      const chosen = valid ? tabName : "overview";
+      document.querySelectorAll(".tab-button").forEach((button) => button.classList.toggle("active", button.dataset.tab === chosen));
+      document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.toggle("active", panel.id === chosen));
+      if (updateHash) history.replaceState(null, "", `#${chosen}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.querySelectorAll(".tab-button").forEach((button) => button.addEventListener("click", () => setTab(button.dataset.tab)));
+    window.addEventListener("hashchange", () => setTab(location.hash.slice(1), false));
+    if (location.hash) setTab(location.hash.slice(1), false);
+
+    function renderMedical(targetId, items) {
+      document.getElementById(targetId).innerHTML = (items ?? []).map((item) => `
+        <div class="item">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${escapeHtml(item.name)} • ${escapeHtml(item.position)}</div>
+              <div class="item-note">${escapeHtml(item.issue)}</div>
+            </div>
+            <span class="pill ${pillClass(item.status)}">${escapeHtml(item.status)}</span>
+          </div>
+          <div class="item-note">${escapeHtml(item.plan)}</div>
+        </div>
+      `).join("") || '<div class="empty">No active medical items.</div>';
+    }
+
+    function renderDecisions(targetId, items) {
+      document.getElementById(targetId).innerHTML = (items ?? []).map((item) => `
+        <div class="item">
+          <div class="item-top">
+            <div class="item-title">${escapeHtml(item.title)}</div>
+            <span class="pill ${pillClass(item.status)}">${escapeHtml(item.status)}</span>
+          </div>
+          <div class="item-note">${escapeHtml(item.note ?? "")}</div>
+        </div>
+      `).join("") || '<div class="empty">No open decisions.</div>';
+    }
+
+    function renderState(row, source = "initial") {
+      if (!row?.state) return;
+      currentStateRow = row;
+      const state = row.state;
+      const record = state.franchise?.record ?? {};
+      const timeline = state.timeline ?? {};
+      const opponent = state.opponent ?? {};
+      const canon = state.canon ?? {};
+      const roster = state.roster ?? {};
+      const culture = state.culture ?? {};
+      const resources = state.resources ?? {};
+
+      document.getElementById("record").textContent = `${record.wins ?? "—"}-${record.losses ?? "—"}`;
+      document.getElementById("standing").textContent = `${record.central_position ?? "—"} • ${record.point_differential >= 0 ? "+" : ""}${record.point_differential ?? "—"} differential`;
+      document.getElementById("week").textContent = `Week ${timeline.week ?? "—"}`;
+      document.getElementById("day").textContent = timeline.day ?? "—";
+      document.getElementById("opponent").textContent = opponent.name ?? "—";
+      document.getElementById("kickoff").textContent = opponent.kickoff_label ?? "—";
+      document.getElementById("version").textContent = row.version ?? "—";
+      document.getElementById("updated").textContent = row.updated_at ? new Date(row.updated_at).toLocaleString() : "—";
+      document.getElementById("continuation").textContent = timeline.exact_continuation_point ?? timeline.current_position ?? "—";
+      document.getElementById("kevinLock").textContent = canon.kevin_lock?.rule ?? "Kevin lock missing.";
+      document.getElementById("dialogueRule").textContent = canon.dialogue_attribution_rule ?? "";
+      document.getElementById("constitution").textContent = canon.constitution?.version ?? "—";
+      document.getElementById("bible").textContent = `v${canon.bible?.version ?? "—"}`;
+      document.getElementById("checkpoint").textContent = canon.checkpoint?.id ?? row.source_checkpoint_id ?? "—";
+      document.getElementById("seal").textContent = row.seal_status ?? canon.checkpoint?.status ?? "—";
+      document.getElementById("bow").textContent = `No. ${culture.victory_bow?.number ?? "—"} • ${culture.victory_bow?.holder ?? "—"}`;
+      document.getElementById("standard").textContent = culture.internal_standard ?? "—";
+      document.getElementById("term").textContent = culture.offensive_term ?? "—";
+      document.getElementById("cap").textContent = Number.isFinite(resources.cap?.practical_flexibility_millions)
+        ? `$${resources.cap.practical_flexibility_millions.toFixed(4)}M`
+        : "—";
+
+      document.getElementById("activeCount").textContent = roster.active_count ?? "—";
+      document.getElementById("psCount").textContent = roster.practice_squad_count ?? "—";
+      document.getElementById("protections").textContent = roster.week_three_protections_status ?? "—";
+      document.getElementById("elevations").innerHTML = (roster.elevations ?? []).map((item) => `
+        <div class="item">
+          <div class="item-top">
+            <div class="item-title">${escapeHtml(item.name)} • ${escapeHtml(item.position)}</div>
+            <span class="pill">${escapeHtml(item.remaining)} left</span>
+          </div>
+          <div class="item-note">${escapeHtml(item.note)}</div>
+        </div>
+      `).join("") || '<div class="empty">No elevation records.</div>';
+
+      renderDecisions("decisions", state.open_decisions);
+      renderDecisions("rosterDecisions", state.open_decisions);
+      renderMedical("overviewMedical", state.medical);
+      renderMedical("rosterMedical", state.medical);
+
+      document.getElementById("boundaries").innerHTML = (canon.evidence_boundaries ?? []).map((item) => `
+        <div class="item"><div class="item-note">${escapeHtml(item)}</div></div>
+      `).join("") || '<div class="empty">No evidence boundaries recorded.</div>';
+
+      document.getElementById("archiveVersion").textContent = row.version ?? "—";
+      document.getElementById("archiveCheckpoint").textContent = canon.checkpoint?.id ?? row.source_checkpoint_id ?? "—";
+      document.getElementById("received").textContent = `Console received ${new Date().toLocaleTimeString()}`;
+      setConnection(source === "realtime" ? "Realtime state update received" : "Connected to Archers Realtime", "ok");
+    }
+
+    function renderEvents() {
+      document.getElementById("events").innerHTML = recentEvents.map((event) => `
+        <div class="item">
+          <div class="item-top">
+            <div class="item-title">v${escapeHtml(event.state_version)} • ${escapeHtml(event.event_type)}</div>
+            <span class="pill">${escapeHtml(event.source_label)}</span>
+          </div>
+          <div class="item-note">${escapeHtml(event.summary)}</div>
+          <div class="item-note">${event.created_at ? escapeHtml(new Date(event.created_at).toLocaleString()) : ""}</div>
+        </div>
+      `).join("") || '<div class="empty">No canon events recorded.</div>';
+      document.getElementById("latestEvent").textContent = recentEvents[0] ? `v${recentEvents[0].state_version} • ${recentEvents[0].event_type}` : "—";
+    }
+
+    function renderStandings(rows) {
+      const central = rows.filter((row) => row.division === "Central").sort((a,b) => (a.division_rank ?? 99) - (b.division_rank ?? 99));
+      document.getElementById("centralTable").innerHTML = central.map((row) => `
+        <tr class="${row.is_archers ? "archers-row" : ""}">
+          <td class="rank">${escapeHtml(row.division_rank)}</td>
+          <td>${escapeHtml(row.team_name)}</td>
+          <td>${escapeHtml(recordText(row))}</td>
+          <td>${escapeHtml(divisionText(row))}</td>
+          <td>${escapeHtml(row.points_for)}</td>
+          <td>${escapeHtml(row.points_against)}</td>
+          <td>${escapeHtml(signed(row.point_differential))}</td>
+        </tr>
+      `).join("") || '<tr><td colspan="7" class="empty">Central standings are not installed yet.</td></tr>';
+
+      document.getElementById("overviewCentral").innerHTML = central.map((row) => `
+        <div class="item">
+          <div class="item-top"><div class="item-title">${escapeHtml(row.division_rank)}. ${escapeHtml(row.team_name)}</div><span class="pill ${row.is_archers ? "good" : ""}">${escapeHtml(recordText(row))}</span></div>
+          <div class="item-note">Division ${escapeHtml(divisionText(row))} • ${escapeHtml(signed(row.point_differential))} differential</div>
+        </div>
+      `).join("") || '<div class="empty">Central standings are not installed yet.</div>';
+    }
+
+    function renderWeekTwoGames(games) {
+      document.getElementById("weekTwoScores").innerHTML = games.map((game) => {
+        const away = teamMap.get(game.away_team_id)?.team_name ?? game.away_team_id;
+        const home = teamMap.get(game.home_team_id)?.team_name ?? game.home_team_id;
+        const awayWon = game.away_score > game.home_score;
+        const homeWon = game.home_score > game.away_score;
+        return `
+          <div class="score-game">
+            <div class="score-line"><span class="${awayWon ? "winner" : "loser"}">${escapeHtml(away)}</span><span class="score">${escapeHtml(game.away_score)}</span></div>
+            <div class="score-line"><span class="${homeWon ? "winner" : "loser"}">${escapeHtml(home)}${game.overtime ? '<span class="ot">OT</span>' : ""}</span><span class="score">${escapeHtml(game.home_score)}</span></div>
+          </div>`;
+      }).join("") || '<div class="empty">No Week Two games loaded.</div>';
+    }
+
+    function renderSchedule(rows) {
+      document.getElementById("scheduleList").innerHTML = rows.map((row) => {
+        const opponent = row.status === "BYE" ? "BYE" : (teamMap.get(row.opponent_team_id)?.team_name ?? row.opponent_team_id ?? "—");
+        const dateText = row.game_date ? new Date(`${row.game_date}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—";
+        const result = row.status === "FINAL"
+          ? `${row.archers_score > row.opponent_score ? "W" : row.archers_score < row.opponent_score ? "L" : "T"} ${row.archers_score}-${row.opponent_score}`
+          : row.status;
+        return `
+          <div class="schedule-row ${row.status.toLowerCase()}">
+            <div class="schedule-week">W${escapeHtml(row.week)}</div>
+            <div>${escapeHtml(dateText)}</div>
+            <div class="schedule-opponent">${escapeHtml(row.site ? `${row.site === "Home" ? "vs" : row.site === "Away" ? "at" : "vs"} ${opponent}` : opponent)}</div>
+            <div>${escapeHtml(row.kickoff_time_ct ?? "")}</div>
+            <div class="schedule-result">${escapeHtml(result)}</div>
+            <div class="schedule-note">${escapeHtml(row.note ?? "")}</div>
+          </div>`;
+      }).join("") || '<div class="empty">Schedule is not installed yet.</div>';
+    }
+
+    async function loadFranchise() {
+      const { data: row, error: stateError } = await client
+        .from("archers_franchise_state")
+        .select("id, version, state, source_checkpoint_id, seal_status, updated_at")
+        .eq("id", FRANCHISE_ID)
+        .single();
+      if (stateError) throw stateError;
+
+      const { data: events, error: eventError } = await client
+        .from("archers_canon_events")
+        .select("event_id, state_version, event_type, summary, source_label, created_at")
+        .eq("franchise_id", FRANCHISE_ID)
+        .order("event_id", { ascending: false })
+        .limit(20);
+      if (eventError) throw eventError;
+
+      recentEvents = events ?? [];
+      renderState(row, "initial");
+      renderEvents();
+    }
+
+    async function loadLeague() {
+      const { data: teams, error: teamError } = await client
+        .from("cff_teams")
+        .select("team_id, team_name, city, nickname, conference, division, alignment_status, is_archers")
+        .eq("active", true)
+        .order("team_name");
+      if (teamError) throw teamError;
+      teamMap = new Map((teams ?? []).map((team) => [team.team_id, team]));
+      document.getElementById("knownTeams").textContent = teams?.length ?? 0;
+      document.getElementById("confirmedTeams").textContent = (teams ?? []).filter((team) => team.division === "Central").length;
+
+      const { data: standings, error: standingsError } = await client
+        .from("cff_standings")
+        .select("*")
+        .eq("season", SEASON);
+      if (standingsError) throw standingsError;
+      renderStandings(standings ?? []);
+
+      const { data: games, error: gameError } = await client
+        .from("cff_games")
+        .select("game_id, week, away_team_id, home_team_id, away_score, home_score, overtime, status")
+        .eq("season", SEASON)
+        .eq("week", 2)
+        .eq("status", "FINAL")
+        .order("game_id");
+      if (gameError) throw gameError;
+      renderWeekTwoGames(games ?? []);
+
+      const { data: schedule, error: scheduleError } = await client
+        .from("archers_schedule")
+        .select("season, week, game_date, opponent_team_id, site, kickoff_time_ct, status, archers_score, opponent_score, note")
+        .eq("season", SEASON)
+        .order("week");
+      if (scheduleError) throw scheduleError;
+      renderSchedule(schedule ?? []);
+    }
+
+    function subscribe() {
+      client
+        .channel("archers-franchise-console-v2")
+        .on("postgres_changes", {
+          event: "UPDATE", schema: "public", table: "archers_franchise_state", filter: `id=eq.${FRANCHISE_ID}`
+        }, (payload) => renderState(payload.new, "realtime"))
+        .on("postgres_changes", {
+          event: "INSERT", schema: "public", table: "archers_canon_events", filter: `franchise_id=eq.${FRANCHISE_ID}`
+        }, (payload) => {
+          recentEvents = [payload.new, ...recentEvents].slice(0, 20);
+          renderEvents();
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "cff_games" }, () => loadLeague().catch(console.error))
+        .on("postgres_changes", { event: "*", schema: "public", table: "cff_teams" }, () => loadLeague().catch(console.error))
+        .on("postgres_changes", { event: "*", schema: "public", table: "archers_schedule" }, () => loadLeague().catch(console.error))
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") setConnection("Connected to Archers Realtime", "ok");
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setConnection(`Realtime connection: ${status}`, "bad");
+        });
+    }
+
+    Promise.all([loadFranchise(), loadLeague()])
+      .then(subscribe)
+      .catch((error) => setConnection(`Console setup required: ${error.message}`, "bad"));
+  </script>
+</body>
+</html>
