@@ -56,6 +56,50 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function parsePatch(body: Record<string, unknown>):
+  | { patch: Record<string, unknown>; error?: never }
+  | { patch?: never; error: Response } {
+  // Backward compatibility for direct callers that still send a JSON object.
+  if (isPlainObject(body.patch)) {
+    return { patch: body.patch };
+  }
+
+  // Custom GPT Actions expose arbitrary nested objects unreliably. Transport the
+  // same minimal nested delta as a JSON string, then validate it server-side.
+  if (typeof body.patch_json !== "string" || body.patch_json.trim().length === 0) {
+    return {
+      error: jsonResponse(
+        { error: "patch_json must be a non-empty string containing one JSON object" },
+        400,
+      ),
+    };
+  }
+
+  try {
+    const decoded = JSON.parse(body.patch_json);
+    if (!isPlainObject(decoded)) {
+      return {
+        error: jsonResponse(
+          { error: "patch_json must decode to one JSON object" },
+          400,
+        ),
+      };
+    }
+
+    return { patch: decoded };
+  } catch (error) {
+    return {
+      error: jsonResponse(
+        {
+          error: "patch_json is not valid JSON",
+          details: error instanceof Error ? error.message : null,
+        },
+        400,
+      ),
+    };
+  }
+}
+
 export default {
   async fetch(req: Request): Promise<Response> {
     if (req.method === "OPTIONS") {
@@ -127,7 +171,6 @@ export default {
 
       const eventType = body.event_type;
       const summary = body.summary;
-      const patch = body.patch;
       const exactKevinText = body.exact_kevin_text ?? null;
       const sourceLabel = body.source_label ?? "LIVE_SESSION_LOG";
 
@@ -139,9 +182,8 @@ export default {
         return jsonResponse({ error: "summary must be a non-empty string" }, 400);
       }
 
-      if (!isPlainObject(patch)) {
-        return jsonResponse({ error: "patch must be a JSON object" }, 400);
-      }
+      const parsedPatch = parsePatch(body);
+      if (parsedPatch.error) return parsedPatch.error;
 
       if (exactKevinText !== null && typeof exactKevinText !== "string") {
         return jsonResponse({ error: "exact_kevin_text must be a string or null" }, 400);
@@ -152,7 +194,7 @@ export default {
       }
 
       const { data, error } = await supabase.rpc("apply_archers_state_update", {
-        p_patch: patch,
+        p_patch: parsedPatch.patch,
         p_event_type: eventType,
         p_summary: summary,
         p_exact_kevin_text: exactKevinText,
