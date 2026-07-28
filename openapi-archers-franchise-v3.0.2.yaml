@@ -1,0 +1,285 @@
+openapi: 3.0.1
+info:
+  title: Draft a Dynasty Unified Operations
+  version: 3.0.2
+  description: Protected operations bridge for the St. Louis Archers and the full CFF.
+servers:
+  - url: https://oqbylwlkrabxvpdhugrf.supabase.co/functions/v1
+components:
+  securitySchemes:
+    archersActionKey:
+      type: apiKey
+      in: header
+      name: x-archers-key
+security:
+  - archersActionKey: []
+paths:
+  /archers-franchise:
+    get:
+      operationId: getArchersOperationsState
+      summary: Read current dynasty operations state
+      description: Read franchise, league, game, resource, audit, or capability data before play or a write.
+      x-openai-isConsequential: false
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          description: Operational area to read.
+          schema:
+            type: string
+            default: snapshot
+            enum: [snapshot, league, game, resources, audit, capabilities]
+        - name: season
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 2026
+        - name: week
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: game_id
+          in: query
+          required: false
+          description: Required when scope is game.
+          schema:
+            type: string
+        - name: resource_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: resource_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: include_archived
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+      responses:
+        "200":
+          description: Requested operational state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scope:
+                    type: string
+                  backend_version:
+                    type: string
+                  state_version:
+                    type: integer
+                  state:
+                    type: object
+                    properties: {}
+                    additionalProperties: true
+                  recent_events:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                      additionalProperties: true
+                  teams:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                      additionalProperties: true
+                  standings:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                      additionalProperties: true
+                  games:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                      additionalProperties: true
+                  schedule:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                      additionalProperties: true
+                  resources:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                      additionalProperties: true
+                  live_game:
+                    type: object
+                    nullable: true
+                    properties: {}
+                    additionalProperties: true
+                  capabilities:
+                    type: object
+                    properties: {}
+                    additionalProperties: true
+                  error:
+                    type: string
+                additionalProperties: true
+    post:
+      operationId: executeArchersOperation
+      summary: Execute one validated dynasty operation
+      description: Perform one protected write with version checks, idempotency, audit logging, soft archive, and atomic game finalization.
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [operation, payload_json, idempotency_key, summary, source_label]
+              properties:
+                operation:
+                  type: string
+                  enum:
+                    - patch_franchise_state
+                    - upsert_resource
+                    - bulk_upsert_resources
+                    - archive_resource
+                    - upsert_team
+                    - upsert_game
+                    - bulk_upsert_games
+                    - upsert_schedule
+                    - start_game
+                    - update_live_game
+                    - record_drive
+                    - record_game_event
+                    - upsert_team_stats
+                    - upsert_player_stats
+                    - finalize_game
+                    - create_snapshot
+                resource_type:
+                  type: string
+                  nullable: true
+                  description: Generic type such as player, injury, contract, staff_member, transaction, or award.
+                resource_id:
+                  type: string
+                  nullable: true
+                  description: Stable ID for the resource, team, game, or schedule item.
+                payload_json:
+                  type: string
+                  minLength: 2
+                  description: Valid JSON-object string containing factual operation fields.
+                expected_version:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  description: Current version of an existing versioned record.
+                idempotency_key:
+                  type: string
+                  minLength: 4
+                  maxLength: 180
+                  description: Unique key for this exact write. Reuse only to retry the identical request.
+                summary:
+                  type: string
+                  minLength: 1
+                  description: Concise factual description of what becomes canon.
+                exact_kevin_text:
+                  type: string
+                  nullable: true
+                  description: Kevin Dorey's exact supplied words only. Use null when none were supplied.
+                source_label:
+                  type: string
+                  enum: [USER_EXPLICIT, LIVE_SESSION_LOG, CHECKPOINT, CORRECTION, SYSTEM]
+                dry_run:
+                  type: boolean
+                  default: false
+                  description: Validate and preview without writing when true.
+      responses:
+        "200":
+          description: Successful operation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operation:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                    additionalProperties: true
+                  state_version:
+                    type: integer
+                  event_id:
+                    type: integer
+                  idempotent_replay:
+                    type: boolean
+                  dry_run:
+                    type: boolean
+                  error:
+                    type: string
+                additionalProperties: true
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: string
+                  hint:
+                    type: string
+                additionalProperties: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                additionalProperties: true
+        "409":
+          description: Version, duplicate, locked-final, or validation conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: string
+                  hint:
+                    type: string
+                additionalProperties: true
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: string
+                  hint:
+                    type: string
+                additionalProperties: true
