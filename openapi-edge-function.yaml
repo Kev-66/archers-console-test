@@ -1,0 +1,71 @@
+openapi: 3.1.0
+info:
+  title: Archers Console Edge Function
+  version: 0.3.0
+  description: Secure proof-of-concept bridge between a Custom GPT and Supabase Realtime.
+servers:
+  - url: https://oqbylwlkrabxvpdhugrf.supabase.co/functions/v1
+components:
+  securitySchemes:
+    archersActionKey:
+      type: apiKey
+      in: header
+      name: x-archers-key
+  schemas:
+    ArchersTestState:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+        message:
+          type: string
+        note:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+security:
+  - archersActionKey: []
+paths:
+  /archers-state:
+    get:
+      operationId: getArchersEdgeState
+      summary: Read the current Archers realtime test state
+      x-openai-isConsequential: false
+      responses:
+        "200":
+          description: Current Archers test state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArchersTestState"
+    post:
+      operationId: updateArchersEdgeState
+      summary: Save a new Archers realtime test message
+      description: Send only the exact message text. The function increments the version and writes the timestamp.
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - message
+              properties:
+                message:
+                  type: string
+                  minLength: 1
+      responses:
+        "200":
+          description: Updated Archers test state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArchersTestState"
