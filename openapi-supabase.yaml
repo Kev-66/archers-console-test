@@ -1,0 +1,128 @@
+openapi: 3.1.0
+info:
+  title: Archers Console Supabase Realtime State
+  version: 0.2.0
+  description: >
+    Proof-of-concept action that reads and updates one Supabase row used as
+    shared state for the St. Louis Archers realtime console test.
+servers:
+  - url: https://oqbylwlkrabxvpdhugrf.supabase.co/rest/v1
+components:
+  securitySchemes:
+    supabaseApiKey:
+      type: apiKey
+      in: header
+      name: apikey
+security:
+  - supabaseApiKey: []
+paths:
+  /archers_test_state:
+    get:
+      operationId: getArchersRealtimeTestState
+      summary: Read the current Archers realtime test state
+      description: >
+        Read the single row whose id is archers-test. Always use id=eq.archers-test
+        and select=id,version,message,note,sent_at,updated_at.
+      x-openai-isConsequential: false
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - eq.archers-test
+        - name: select
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - id,version,message,note,sent_at,updated_at
+      responses:
+        "200":
+          description: Current test-state row
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArchersTestState"
+    patch:
+      operationId: updateArchersRealtimeTestState
+      summary: Update the Archers realtime test state
+      description: >
+        Update only the row whose id is archers-test. Read the row first, increment
+        version by one, then save the new version, message, note, and sent_at.
+      x-openai-isConsequential: true
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - eq.archers-test
+        - name: Prefer
+          in: header
+          required: true
+          schema:
+            type: string
+            enum:
+              - return=representation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - version
+                - message
+                - note
+                - sent_at
+              properties:
+                version:
+                  type: integer
+                  minimum: 1
+                message:
+                  type: string
+                note:
+                  type: string
+                sent_at:
+                  type: string
+                  format: date-time
+      responses:
+        "200":
+          description: Updated test-state row
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArchersTestState"
+components:
+  securitySchemes:
+    supabaseApiKey:
+      type: apiKey
+      in: header
+      name: apikey
+  schemas:
+    ArchersTestState:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+        message:
+          type: string
+        note:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
