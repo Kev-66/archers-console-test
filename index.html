@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Archers Console Proof of Concept</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b1118;
+      color: #edf3f8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    main { width: min(760px, 100%); }
+    .panel {
+      border: 1px solid #2a3948;
+      border-radius: 18px;
+      padding: 24px;
+      background: #111a24;
+      box-shadow: 0 20px 60px rgba(0,0,0,.28);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 4vw, 2.4rem); }
+    p { color: #aebdca; line-height: 1.5; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 22px 0;
+    }
+    .metric {
+      border: 1px solid #2a3948;
+      border-radius: 14px;
+      padding: 14px;
+      background: #0d151e;
+    }
+    .label { color: #8fa3b5; font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; }
+    .value { margin-top: 6px; font-size: 1.2rem; font-weight: 700; overflow-wrap: anywhere; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: #172431;
+      color: #dce8f2;
+      font-size: .9rem;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #f0b94d; }
+    .dot.ok { background: #4fd18b; }
+    .dot.bad { background: #f06c75; }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      border: 1px solid #2a3948;
+      border-radius: 14px;
+      background: #0b1118;
+      padding: 16px;
+      min-height: 130px;
+      color: #eaf2f8;
+    }
+    .small { font-size: .86rem; color: #7f94a6; }
+    code { color: #c9e7ff; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel">
+      <div class="status"><span id="dot" class="dot"></span><span id="status">Waiting for first poll…</span></div>
+      <h1>St. Louis Archers Console Test</h1>
+      <p>This page polls one public GitHub issue. When the custom GPT updates that issue, this screen changes automatically. No refresh button required.</p>
+
+      <div class="grid">
+        <div class="metric">
+          <div class="label">State version</div>
+          <div id="version" class="value">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Issue updated</div>
+          <div id="updated" class="value">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Console received</div>
+          <div id="received" class="value">—</div>
+        </div>
+      </div>
+
+      <div class="label">Current shared state</div>
+      <pre id="state">Waiting for GitHub Issue #1…</pre>
+
+      <p class="small">Polling every <span id="pollSeconds">1</span> second. API endpoint: <code id="endpoint"></code></p>
+    </section>
+  </main>
+
+  <script>
+    const CONFIG = {
+      owner: "Kev-66",
+      repo: "archers-console-test",
+      issueNumber: 1,
+      pollMs: 1000
+    };
+
+    const endpoint = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/issues/${CONFIG.issueNumber}`;
+    document.getElementById("endpoint").textContent = endpoint;
+    document.getElementById("pollSeconds").textContent = String(CONFIG.pollMs / 1000);
+
+    let lastUpdatedAt = null;
+
+    function setStatus(text, kind) {
+      document.getElementById("status").textContent = text;
+      const dot = document.getElementById("dot");
+      dot.className = "dot" + (kind ? ` ${kind}` : "");
+    }
+
+    async function poll() {
+      try {
+        const started = performance.now();
+        const response = await fetch(endpoint, {
+          headers: { "Accept": "application/vnd.github+json" },
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(`GitHub returned ${response.status}`);
+        }
+
+        const issue = await response.json();
+        const receivedAt = new Date();
+        let parsed;
+
+        try {
+          parsed = JSON.parse(issue.body || "{}");
+        } catch {
+          parsed = { message: issue.body || "(empty issue body)" };
+        }
+
+        document.getElementById("version").textContent = parsed.version ?? "—";
+        document.getElementById("updated").textContent =
+          issue.updated_at ? new Date(issue.updated_at).toLocaleTimeString() : "—";
+        document.getElementById("received").textContent = receivedAt.toLocaleTimeString();
+        document.getElementById("state").textContent = JSON.stringify(parsed, null, 2);
+
+        const changed = lastUpdatedAt && lastUpdatedAt !== issue.updated_at;
+        lastUpdatedAt = issue.updated_at;
+        const elapsed = Math.round(performance.now() - started);
+        setStatus(changed ? `Update received in ${elapsed} ms` : `Connected · last poll ${elapsed} ms`, "ok");
+      } catch (error) {
+        setStatus(error.message, "bad");
+      }
+    }
+
+    poll();
+    setInterval(poll, CONFIG.pollMs);
+  </script>
+</body>
+</html>
