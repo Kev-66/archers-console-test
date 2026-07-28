@@ -46,9 +46,11 @@ Use applyArchersFranchiseUpdate only when canon actually changes, bundling relat
 For routine discussion, options, hypotheticals, or analysis where no decision occurred, do not write.
 
 HOW TO WRITE
-- patch must be the smallest nested JSON delta that expresses what changed.
+- patch_json is a string containing valid JSON for the smallest nested state delta that expresses what changed.
 - Never send the entire franchise state.
-- event_type should be compact: decision, roster, medical, scene_closeout, correction, checkpoint, game, or culture.
+- Example patch_json: {"canon":{"sync_status":"Phase One test passed"}}
+- For multiple related changes, include them in the same nested JSON object and serialize that object as one string.
+- event_type should be compact: decision, roster, medical, scene_closeout, correction, checkpoint, game, culture, or system.
 - summary must be factual and concise.
 - source_label:
   - USER_EXPLICIT for a direct Kevin decision or exact dialogue
