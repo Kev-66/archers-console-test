@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Archers Console Supabase Realtime State
-  version: 0.2.0
+  version: 0.2.1
   description: >
     Proof-of-concept action that reads and updates one Supabase row used as
     shared state for the St. Louis Archers realtime console test.
@@ -13,6 +13,24 @@ components:
       type: apiKey
       in: header
       name: apikey
+  schemas:
+    ArchersTestState:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+        message:
+          type: string
+        note:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
 security:
   - supabaseApiKey: []
 paths:
@@ -102,27 +120,3 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ArchersTestState"
-components:
-  securitySchemes:
-    supabaseApiKey:
-      type: apiKey
-      in: header
-      name: apikey
-  schemas:
-    ArchersTestState:
-      type: object
-      properties:
-        id:
-          type: string
-        version:
-          type: integer
-        message:
-          type: string
-        note:
-          type: string
-        sent_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
