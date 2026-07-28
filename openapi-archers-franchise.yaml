@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: St. Louis Archers Franchise Console
-  version: 1.0.0-phase1
+  version: 1.0.1-phase1
   description: >
     Phase One bridge for reading and updating the canonical St. Louis Archers
     franchise state through a protected Supabase Edge Function.
@@ -61,20 +61,22 @@ components:
       required:
         - event_type
         - summary
-        - patch
+        - patch_json
         - source_label
       properties:
         event_type:
           type: string
-          description: Compact machine-friendly category such as decision, roster, medical, scene_closeout, correction, checkpoint, or game.
+          description: Compact machine-friendly category such as decision, roster, medical, scene_closeout, correction, checkpoint, game, culture, or system.
         summary:
           type: string
           minLength: 1
           description: Concise factual description of what became canon.
-        patch:
-          type: object
-          additionalProperties: true
-          description: Minimal nested JSON delta. Never resend or rewrite the entire franchise state.
+        patch_json:
+          type: string
+          minLength: 2
+          description: >
+            A valid JSON string containing only the smallest nested state delta.
+            Do not resend the full state. Example: {"canon":{"sync_status":"Phase One test passed"}}
         exact_kevin_text:
           type:
             - string
