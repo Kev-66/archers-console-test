@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>St. Louis Archers Franchise Console</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #07110f;
+      --panel: #0e1b18;
+      --panel-2: #12231f;
+      --line: #27463d;
+      --cream: #f2ead7;
+      --muted: #a7bab2;
+      --green: #56d49b;
+      --gold: #ddb964;
+      --red: #ef7d79;
+      --amber: #e6b964;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top, #10231e 0, var(--bg) 45%); color: var(--cream); }
+    main { width: min(1220px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 64px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 20px; }
+    h1 { margin: 8px 0 4px; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1; }
+    h2 { margin: 0 0 14px; font-size: 1.05rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+    p { color: var(--muted); line-height: 1.55; }
+    .eyebrow { color: var(--gold); text-transform: uppercase; letter-spacing: .16em; font-size: .75rem; font-weight: 800; }
+    .status { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; background: rgba(14,27,24,.85); color: var(--muted); white-space: nowrap; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); }
+    .dot.ok { background: var(--green); }
+    .dot.bad { background: var(--red); }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .panel { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(18,35,31,.96), rgba(12,24,21,.96)); border-radius: 18px; box-shadow: 0 18px 55px rgba(0,0,0,.2); }
+    .metric { padding: 16px; min-height: 104px; }
+    .label { color: #8eaaa0; text-transform: uppercase; letter-spacing: .1em; font-size: .72rem; }
+    .value { margin-top: 8px; font-size: 1.35rem; font-weight: 800; overflow-wrap: anywhere; }
+    .subvalue { margin-top: 5px; color: var(--muted); font-size: .88rem; }
+    .layout { display: grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+    .stack { display: grid; gap: 16px; align-content: start; }
+    .panel { padding: 20px; }
+    .continuation { font-size: 1.08rem; line-height: 1.6; color: var(--cream); margin: 0; }
+    .list { display: grid; gap: 10px; }
+    .item { border: 1px solid rgba(39,70,61,.8); border-radius: 13px; background: rgba(6,17,15,.55); padding: 13px; }
+    .item-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .item-title { font-weight: 800; }
+    .item-note { margin-top: 5px; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+    .pill { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+    .pill.good { color: var(--green); }
+    .pill.warn { color: var(--amber); }
+    .pill.bad { color: var(--red); }
+    .guardrail { border-left: 3px solid var(--gold); padding-left: 12px; color: var(--cream); line-height: 1.55; }
+    .meta { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: .9rem; }
+    .meta dt { color: var(--muted); }
+    .meta dd { margin: 0; text-align: right; font-weight: 700; }
+    .empty { color: var(--muted); font-style: italic; }
+    footer { margin-top: 20px; color: #749085; font-size: .82rem; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    @media (max-width: 900px) {
+      header { display: block; }
+      .status { margin-top: 14px; }
+      .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      main { width: min(100% - 20px, 1220px); padding-top: 18px; }
+      .metrics { grid-template-columns: 1fr; }
+      .metric { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <div class="eyebrow">Draft a Dynasty • Phase One</div>
+        <h1>St. Louis Archers</h1>
+        <p style="margin:8px 0 0">Canon and Session Control Console</p>
+      </div>
+      <div class="status"><span id="dot" class="dot"></span><span id="connection">Connecting to Supabase Realtime…</span></div>
+    </header>
+
+    <section class="metrics">
+      <div class="metric"><div class="label">Record</div><div id="record" class="value">—</div><div id="standing" class="subvalue">—</div></div>
+      <div class="metric"><div class="label">Current Week</div><div id="week" class="value">—</div><div id="day" class="subvalue">—</div></div>
+      <div class="metric"><div class="label">Next Opponent</div><div id="opponent" class="value">—</div><div id="kickoff" class="subvalue">—</div></div>
+      <div class="metric"><div class="label">State Version</div><div id="version" class="value">—</div><div id="updated" class="subvalue">—</div></div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <article class="panel">
+          <h2>Exact Continuation Point</h2>
+          <p id="continuation" class="continuation">Loading canonical state…</p>
+        </article>
+
+        <article class="panel">
+          <h2>Open Decisions</h2>
+          <div id="decisions" class="list"><div class="empty">Loading…</div></div>
+        </article>
+
+        <article class="panel">
+          <h2>Medical and Availability</h2>
+          <div id="medical" class="list"><div class="empty">Loading…</div></div>
+        </article>
+
+        <article class="panel">
+          <h2>Recent Canon Activity</h2>
+          <div id="events" class="list"><div class="empty">Loading…</div></div>
+        </article>
+      </div>
+
+      <div class="stack">
+        <article class="panel">
+          <h2>Canon Lock</h2>
+          <div id="kevinLock" class="guardrail">Loading guardrail…</div>
+          <div id="dialogueRule" class="guardrail" style="margin-top:12px"></div>
+        </article>
+
+        <article class="panel">
+          <h2>Roster and Elevations</h2>
+          <dl class="meta">
+            <dt>Active roster</dt><dd id="activeCount">—</dd>
+            <dt>Practice squad</dt><dd id="psCount">—</dd>
+            <dt>Week Three protections</dt><dd id="protections">—</dd>
+          </dl>
+          <div id="elevations" class="list" style="margin-top:14px"></div>
+        </article>
+
+        <article class="panel">
+          <h2>Governing Record</h2>
+          <dl class="meta">
+            <dt>Constitution</dt><dd id="constitution">—</dd>
+            <dt>Bible</dt><dd id="bible">—</dd>
+            <dt>Checkpoint</dt><dd id="checkpoint">—</dd>
+            <dt>Seal</dt><dd id="seal">—</dd>
+          </dl>
+        </article>
+
+        <article class="panel">
+          <h2>Culture and Resources</h2>
+          <dl class="meta">
+            <dt>Victory Bow</dt><dd id="bow">—</dd>
+            <dt>Internal standard</dt><dd id="standard">—</dd>
+            <dt>Offensive term</dt><dd id="term">—</dd>
+            <dt>Practical cap flexibility</dt><dd id="cap">—</dd>
+          </dl>
+        </article>
+
+        <article class="panel">
+          <h2>Evidence Boundaries</h2>
+          <div id="boundaries" class="list"></div>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <span>One initial read, then live WebSocket events. No repeated polling.</span>
+      <span id="received">Console waiting for state…</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://oqbylwlkrabxvpdhugrf.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_z-EjW-S0x7GZH2VREEaXAw_NOOrbH-m";
+    const FRANCHISE_ID = "stl-2026";
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+
+    let recentEvents = [];
+
+    const escapeHtml = (value) => String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+    function setConnection(text, kind) {
+      document.getElementById("connection").textContent = text;
+      document.getElementById("dot").className = "dot" + (kind ? ` ${kind}` : "");
+    }
+
+    function pillClass(status) {
+      const value = String(status ?? "").toLowerCase();
+      if (value.includes("expected") || value.includes("synced")) return "good";
+      if (value.includes("question") || value.includes("monitor") || value.includes("next")) return "warn";
+      if (value.includes("out") || value.includes("doubt")) return "bad";
+      return "";
+    }
+
+    function renderState(row, source = "initial") {
+      if (!row?.state) return;
+      const state = row.state;
+      const record = state.franchise?.record ?? {};
+      const timeline = state.timeline ?? {};
+      const opponent = state.opponent ?? {};
+      const canon = state.canon ?? {};
+      const roster = state.roster ?? {};
+      const culture = state.culture ?? {};
+      const resources = state.resources ?? {};
+
+      document.getElementById("record").textContent = `${record.wins ?? "—"}-${record.losses ?? "—"}`;
+      document.getElementById("standing").textContent = `${record.central_position ?? "—"} • ${record.point_differential >= 0 ? "+" : ""}${record.point_differential ?? "—"} differential`;
+      document.getElementById("week").textContent = `Week ${timeline.week ?? "—"}`;
+      document.getElementById("day").textContent = timeline.day ?? "—";
+      document.getElementById("opponent").textContent = opponent.name ?? "—";
+      document.getElementById("kickoff").textContent = opponent.kickoff_label ?? "—";
+      document.getElementById("version").textContent = row.version ?? "—";
+      document.getElementById("updated").textContent = row.updated_at ? new Date(row.updated_at).toLocaleString() : "—";
+      document.getElementById("continuation").textContent = timeline.exact_continuation_point ?? timeline.current_position ?? "—";
+      document.getElementById("kevinLock").textContent = canon.kevin_lock?.rule ?? "Kevin lock missing.";
+      document.getElementById("dialogueRule").textContent = canon.dialogue_attribution_rule ?? "";
+      document.getElementById("activeCount").textContent = roster.active_count ?? "—";
+      document.getElementById("psCount").textContent = roster.practice_squad_count ?? "—";
+      document.getElementById("protections").textContent = roster.week_three_protections_status ?? "—";
+      document.getElementById("constitution").textContent = canon.constitution?.version ?? "—";
+      document.getElementById("bible").textContent = `v${canon.bible?.version ?? "—"}`;
+      document.getElementById("checkpoint").textContent = canon.checkpoint?.id ?? row.source_checkpoint_id ?? "—";
+      document.getElementById("seal").textContent = row.seal_status ?? canon.checkpoint?.status ?? "—";
+      document.getElementById("bow").textContent = `No. ${culture.victory_bow?.number ?? "—"} • ${culture.victory_bow?.holder ?? "—"}`;
+      document.getElementById("standard").textContent = culture.internal_standard ?? "—";
+      document.getElementById("term").textContent = culture.offensive_term ?? "—";
+      document.getElementById("cap").textContent = Number.isFinite(resources.cap?.practical_flexibility_millions)
+        ? `$${resources.cap.practical_flexibility_millions.toFixed(4)}M`
+        : "—";
+
+      document.getElementById("decisions").innerHTML = (state.open_decisions ?? []).map((item) => `
+        <div class="item">
+          <div class="item-top">
+            <div class="item-title">${escapeHtml(item.title)}</div>
+            <span class="pill ${pillClass(item.status)}">${escapeHtml(item.status)}</span>
+          </div>
+          <div class="item-note">${escapeHtml(item.note ?? "")}</div>
+        </div>
+      `).join("") || '<div class="empty">No open decisions.</div>';
+
+      document.getElementById("medical").innerHTML = (state.medical ?? []).map((item) => `
+        <div class="item">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${escapeHtml(item.name)} • ${escapeHtml(item.position)}</div>
+              <div class="item-note">${escapeHtml(item.issue)}</div>
+            </div>
+            <span class="pill ${pillClass(item.status)}">${escapeHtml(item.status)}</span>
+          </div>
+          <div class="item-note">${escapeHtml(item.plan)}</div>
+        </div>
+      `).join("") || '<div class="empty">No active medical items.</div>';
+
+      document.getElementById("elevations").innerHTML = (roster.elevations ?? []).map((item) => `
+        <div class="item">
+          <div class="item-top">
+            <div class="item-title">${escapeHtml(item.name)} • ${escapeHtml(item.position)}</div>
+            <span class="pill">${escapeHtml(item.remaining)} left</span>
+          </div>
+          <div class="item-note">${escapeHtml(item.note)}</div>
+        </div>
+      `).join("");
+
+      document.getElementById("boundaries").innerHTML = (canon.evidence_boundaries ?? []).map((item) => `
+        <div class="item"><div class="item-note">${escapeHtml(item)}</div></div>
+      `).join("") || '<div class="empty">No evidence boundaries recorded.</div>';
+
+      document.getElementById("received").textContent = `Console received ${new Date().toLocaleTimeString()}`;
+      setConnection(source === "realtime" ? "Realtime state update received" : "Connected to Archers Realtime", "ok");
+    }
+
+    function renderEvents() {
+      document.getElementById("events").innerHTML = recentEvents.map((event) => `
+        <div class="item">
+          <div class="item-top">
+            <div class="item-title">v${escapeHtml(event.state_version)} • ${escapeHtml(event.event_type)}</div>
+            <span class="pill">${escapeHtml(event.source_label)}</span>
+          </div>
+          <div class="item-note">${escapeHtml(event.summary)}</div>
+          <div class="item-note">${event.created_at ? escapeHtml(new Date(event.created_at).toLocaleString()) : ""}</div>
+        </div>
+      `).join("") || '<div class="empty">No canon events recorded.</div>';
+    }
+
+    async function loadInitial() {
+      const { data: row, error: stateError } = await client
+        .from("archers_franchise_state")
+        .select("id, version, state, source_checkpoint_id, seal_status, updated_at")
+        .eq("id", FRANCHISE_ID)
+        .single();
+
+      if (stateError) throw stateError;
+
+      const { data: events, error: eventError } = await client
+        .from("archers_canon_events")
+        .select("event_id, state_version, event_type, summary, source_label, created_at")
+        .eq("franchise_id", FRANCHISE_ID)
+        .order("event_id", { ascending: false })
+        .limit(12);
+
+      if (eventError) throw eventError;
+
+      recentEvents = events ?? [];
+      renderState(row, "initial");
+      renderEvents();
+    }
+
+    function subscribe() {
+      client
+        .channel("archers-franchise-console")
+        .on("postgres_changes", {
+          event: "UPDATE",
+          schema: "public",
+          table: "archers_franchise_state",
+          filter: `id=eq.${FRANCHISE_ID}`
+        }, (payload) => renderState(payload.new, "realtime"))
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: "archers_canon_events",
+          filter: `franchise_id=eq.${FRANCHISE_ID}`
+        }, (payload) => {
+          recentEvents = [payload.new, ...recentEvents].slice(0, 12);
+          renderEvents();
+        })
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") setConnection("Connected to Archers Realtime", "ok");
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setConnection(`Realtime connection: ${status}`, "bad");
+        });
+    }
+
+    loadInitial()
+      .then(subscribe)
+      .catch((error) => setConnection(`Console setup required: ${error.message}`, "bad"));
+  </script>
+</body>
+</html>
