@@ -1,0 +1,50 @@
+DRAFT A DYNASTY • PHASE THREE • WEEKS 1–2 LEAGUE BACKFILL
+
+These prompts install the 19 missing Week One and Week Two CFF results through the unified Action. Existing preserved results are not rewritten.
+
+IMPORTANT CANON NOTE
+The scores below were prepared during technical setup. Prompt One is a dry run only. Prompt Two should be used only after Kevin explicitly approves these exact scores as canon.
+
+===============================================================================
+PROMPT ONE • REVIEW AND DRY RUN ONLY
+===============================================================================
+
+Read the current league scope for the 2026 season and confirm the existing Week One and Week Two games. Then dry-run one bulk_upsert_games operation for only the 19 missing games listed below. Do not write anything. Do not alter any existing final game. Use source label LIVE_SESSION_LOG, visibility is not applicable, and include the current expected_state_version in payload_json. Use dry-run idempotency key cff-2026-w01-w02-backfill-dryrun-v1. Return a compact table of all 19 proposed games and clearly state that no database write occurred.
+
+Games to preview:
+
+Week One • 2026-09-13
+1. 2026-w01-bal-mia • Baltimore Admirals 24, Miami Tridents 17 • away bal, home mia • FINAL • no overtime • provenance SIMULATED • note: Baltimore opened the season with a controlled road win.
+2. 2026-w01-pit-cin • Pittsburgh Iron 20, Cincinnati Monarchs 27 • away pit, home cin • FINAL • no overtime • provenance SIMULATED • note: Cincinnati won the Northern Division opener at home.
+3. 2026-w01-was-car • Washington Sentinels 16, Carolina Reapers 23 • away was, home car • FINAL • no overtime • provenance SIMULATED • note: Carolina protected home field with a one-score victory.
+4. 2026-w01-ten-atl • Tennessee Copperheads 17, Atlanta Flight 20 • away ten, home atl • FINAL • no overtime • provenance SIMULATED • note: Atlanta won its inaugural opener by a field goal.
+5. 2026-w01-tb-jax • Tampa Bay Tritons 14, Jacksonville Cyclones 21 • away tb, home jax • FINAL • no overtime • provenance SIMULATED • note: Jacksonville took the first Florida matchup of the season.
+6. 2026-w01-sea-por • Seattle Cascades 24, Portland Pioneers 20 • away sea, home por • FINAL • no overtime • provenance SIMULATED • note: Seattle won the first Pacific Northwest rivalry game.
+7. 2026-w01-la-sd • Los Angeles Armada 23, San Diego Breakers 27 • away la, home sd • FINAL • no overtime • provenance SIMULATED • note: San Diego closed out a four-point Southern California win.
+8. 2026-w01-bos-phi • Boston Rebellion 24, Philadelphia Liberty 30 • away bos, home phi • FINAL • no overtime • provenance SIMULATED • note: Philadelphia won a high-scoring Northeast opener.
+9. 2026-w01-mtl-nyg • Montréal Voyageurs 21, New York Guardians 17 • away mtl, home nyg • FINAL • no overtime • provenance SIMULATED • note: Montréal earned a road victory in New York.
+10. 2026-w01-no-dal • New Orleans Krewe 24, Dallas Wranglers 28 • away no, home dal • FINAL • no overtime • provenance SIMULATED • note: Dallas held off New Orleans in the Gulf opener.
+11. 2026-w01-birm-sa • Birmingham Vulcans 13, San Antonio Marshals 26 • away birm, home sa • FINAL • no overtime • provenance SIMULATED • note: San Antonio controlled the second half for a home win.
+12. 2026-w01-lv-ari • Las Vegas Vipers 27, Arizona Scorpions 31 • away lv, home ari • FINAL • no overtime • provenance SIMULATED • note: Arizona survived a late Las Vegas rally.
+13. 2026-w01-phx-min • Phoenix Firebirds 16, Minnesota Stags 20 • away phx, home min • FINAL • no overtime • provenance SIMULATED • note: Minnesota won its inaugural opener with a defensive finish.
+
+Week Two • 2026-09-20
+14. 2026-w02-mtl-bos • Montréal Voyageurs 20, Boston Rebellion 27 • away mtl, home bos • FINAL • no overtime • provenance SIMULATED • note: Boston answered its opening loss with a home win over Montréal.
+15. 2026-w02-phi-min • Philadelphia Liberty 21, Minnesota Stags 23 • away phi, home min • FINAL • no overtime • provenance SIMULATED • note: Minnesota reached 2-0 on a late field goal.
+16. 2026-w02-birm-no • Birmingham Vulcans 17, New Orleans Krewe 24 • away birm, home no • FINAL • no overtime • provenance SIMULATED • note: New Orleans earned its first victory at home.
+17. 2026-w02-phx-lv • Phoenix Firebirds 27, Las Vegas Vipers 30 • away phx, home lv • FINAL • overtime true • provenance SIMULATED • note: Las Vegas won in overtime after Phoenix forced the extra period.
+18. 2026-w02-atl-la • Atlanta Flight 20, Los Angeles Armada 24 • away atl, home la • FINAL • no overtime • provenance SIMULATED • note: Los Angeles secured its first win with a fourth-quarter stop.
+19. 2026-w02-sd-sea • San Diego Breakers 21, Seattle Cascades 27 • away sd, home sea • FINAL • no overtime • provenance SIMULATED • note: Seattle moved to 2-0 by defending home field.
+
+For every game use season 2026, kickoff_label matching Week 1 or Week 2, neutral_site false, and source_checkpoint_id USER-APPROVED-LEAGUE-BACKFILL-2026-07-28.
+
+The state_patch for the dry run should propose:
+{"canon":{"league_results":{"status":"COMPLETE","through_week":2,"preserved_results_retained":true,"missing_results_method":"SIMULATED_WITH_USER_APPROVAL"}}}
+
+Summary: Preview the 19 missing 2026 CFF Week One and Week Two results without writing them.
+
+===============================================================================
+PROMPT TWO • EXECUTE ONLY AFTER EXPLICIT APPROVAL
+===============================================================================
+
+I explicitly approve the exact 19 simulated Week One and Week Two results from the immediately preceding dry-run table as canon. Read the current league scope and snapshot again. Confirm that those 19 game IDs are still missing and that no existing final game would be altered. Then execute one bulk_upsert_games operation containing those exact 19 games and the exact approved state_patch. Use the current expected_state_version, source label LIVE_SESSION_LOG, idempotency key cff-2026-w01-w02-backfill-approved-v1, and summary: Completed the missing 2026 CFF Week One and Week Two results; existing preserved scores were retained and the 19 approved backfill games were recorded as SIMULATED. Preserve my exact approval sentence in exact_kevin_text. After the write, read league scope again and report the returned state_version, event_id, games_written count, and whether every team now has two final games. Do not alter any previously established final score.
