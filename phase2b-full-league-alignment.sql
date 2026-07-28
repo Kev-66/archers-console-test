@@ -114,7 +114,9 @@ on conflict (season) do update set
   updated_at = now();
 
 -- Enhanced standings are derived entirely from recorded final games.
-create or replace view public.cff_standings as
+-- The prior Phase Two A view is dropped because Phase Two B adds columns before the ranking fields.
+drop view if exists public.cff_standings;
+create view public.cff_standings as
 with appearances as (
   select
     g.game_id,
