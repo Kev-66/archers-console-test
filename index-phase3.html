@@ -26,8 +26,8 @@
         const response = await fetch("index-phase2.html", { cache: "no-store" });
         if (!response.ok) throw new Error(`Base console returned ${response.status}`);
         let html = await response.text();
-        html = html.replace("</head>", '<link rel="stylesheet" href="phase3-gameday.css"><link rel="stylesheet" href="phase3-roster.css?v=20260729-2"></head>');
-        html = html.replace("</body>", '<script src="phase3-gameday.js"><\/script><script src="phase3-roster.js?v=20260729-2"><\/script></body>');
+        html = html.replace("</head>", '<link rel="stylesheet" href="phase3-gameday.css"><link rel="stylesheet" href="phase3-roster.css?v=20260729-2"><link rel="stylesheet" href="phase3-roster-drawer.css?v=20260729-1"></head>');
+        html = html.replace("</body>", '<script src="phase3-gameday.js"><\/script><script src="phase3-roster.js?v=20260729-2"><\/script><script src="phase3-roster-drawer.js?v=20260729-1"><\/script></body>');
         document.open();
         document.write(html);
         document.close();
