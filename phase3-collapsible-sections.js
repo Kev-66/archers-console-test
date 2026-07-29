@@ -1,5 +1,6 @@
 (() => {
   const DRAFT_STORAGE_KEY = "archers-frontoffice-draft-capital-collapsed";
+  const TRANSACTION_STORAGE_KEY = "archers-frontoffice-transaction-center-collapsed";
 
   function readCollapsed(key) {
     try {
@@ -24,6 +25,51 @@
     if (persist) writeCollapsed(storageKey, collapsed);
   }
 
+  function upgradeSection({ section, heading, body, source, storageKey, label }) {
+    if (!section || !heading || !body || !source) return false;
+    if (section.dataset.collapsibleReady === "true") return true;
+
+    section.classList.add("fo-collapsible-section");
+
+    let actions = heading.querySelector(".fo-section-heading-actions");
+    if (!actions) {
+      actions = document.createElement("span");
+      actions.className = "fo-section-heading-actions";
+      source.replaceWith(actions);
+      actions.append(source);
+    }
+
+    if (!actions.querySelector(".fo-section-chevron")) {
+      const chevron = document.createElement("span");
+      chevron.className = "fo-section-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.textContent = "⌄";
+      actions.append(chevron);
+    }
+
+    heading.classList.add("fo-section-toggle");
+    heading.setAttribute("role", "button");
+    heading.setAttribute("tabindex", "0");
+    heading.setAttribute("aria-controls", body.id);
+    heading.setAttribute("aria-label", `Expand or collapse ${label}`);
+
+    const toggle = () => {
+      const expanded = heading.getAttribute("aria-expanded") === "true";
+      setCollapsed(section, heading, body, expanded, storageKey);
+    };
+
+    heading.addEventListener("click", toggle);
+    heading.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      toggle();
+    });
+
+    section.dataset.collapsibleReady = "true";
+    setCollapsed(section, heading, body, readCollapsed(storageKey), storageKey, false);
+    return true;
+  }
+
   function upgradeDraftCapital() {
     const section = document.getElementById("fo-draft-capital");
     if (!section) return false;
@@ -35,92 +81,94 @@
     const source = document.getElementById("fo-draft-source");
     if (!heading || !years || !rule || !source) return false;
 
-    const body = document.createElement("div");
-    body.id = "fo-draft-collapsible-body";
-    body.className = "fo-section-body";
-    section.insertBefore(body, years);
-    body.append(years, rule);
+    let body = document.getElementById("fo-draft-collapsible-body");
+    if (!body) {
+      body = document.createElement("div");
+      body.id = "fo-draft-collapsible-body";
+      body.className = "fo-section-body";
+      section.insertBefore(body, years);
+      body.append(years, rule);
+    }
 
-    const actions = document.createElement("span");
-    actions.className = "fo-section-heading-actions";
-    source.replaceWith(actions);
-    actions.append(source);
-
-    const chevron = document.createElement("span");
-    chevron.className = "fo-section-chevron";
-    chevron.setAttribute("aria-hidden", "true");
-    chevron.textContent = "⌄";
-    actions.append(chevron);
-
-    heading.classList.add("fo-section-toggle");
-    heading.setAttribute("role", "button");
-    heading.setAttribute("tabindex", "0");
-    heading.setAttribute("aria-controls", body.id);
-    heading.setAttribute("aria-label", "Expand or collapse Draft Capital");
-
-    const toggle = () => {
-      const expanded = heading.getAttribute("aria-expanded") === "true";
-      setCollapsed(section, heading, body, expanded, DRAFT_STORAGE_KEY);
-    };
-
-    heading.addEventListener("click", toggle);
-    heading.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      toggle();
+    return upgradeSection({
+      section,
+      heading,
+      body,
+      source,
+      storageKey: DRAFT_STORAGE_KEY,
+      label: "Draft Capital"
     });
-
-    section.dataset.collapsibleReady = "true";
-    setCollapsed(section, heading, body, readCollapsed(DRAFT_STORAGE_KEY), DRAFT_STORAGE_KEY, false);
-    return true;
   }
 
-  function draftCoverageValue() {
-    const source = document.getElementById("fo-draft-source");
-    const text = source?.textContent?.trim() ?? "";
+  function upgradeTransactionCenter() {
+    const section = document.getElementById("fo-transaction-center");
+    if (!section) return false;
+    return upgradeSection({
+      section,
+      heading: section.querySelector(".fo-transaction-heading"),
+      body: document.getElementById("fo-transaction-collapsible-body"),
+      source: document.getElementById("fo-transaction-source"),
+      storageKey: TRANSACTION_STORAGE_KEY,
+      label: "Transaction Center"
+    });
+  }
+
+  function coverageValue(sourceId, kind) {
+    const text = document.getElementById(sourceId)?.textContent?.trim() ?? "";
     const liveMatch = text.match(/Live resource v(.+)/i);
     if (liveMatch) return { text: `Structured • v${liveMatch[1]}`, kind: "good" };
     if (/checkpoint snapshot/i.test(text)) return { text: "Checkpoint snapshot", kind: "warn" };
+    if (/canon events/i.test(text)) return { text, kind: "warn" };
+    if (/import pending/i.test(text)) return { text: "Import pending", kind: "warn" };
     if (/unavailable/i.test(text)) return { text: "Unavailable", kind: "bad" };
-    return { text: "Checking", kind: "warn" };
+    return { text: kind === "draft" ? "Checking" : "Loading", kind: "warn" };
   }
 
-  function syncDraftCoverage() {
+  function syncCoverageRow(label, sourceId, kind) {
     const row = [...document.querySelectorAll(".fo-coverage-row")]
-      .find((candidate) => candidate.firstElementChild?.textContent?.trim() === "Draft-pick inventory");
+      .find((candidate) => candidate.firstElementChild?.textContent?.trim() === label);
     const pill = row?.querySelector(".pill");
     if (!pill) return false;
 
-    const coverage = draftCoverageValue();
-    const nextClass = `pill ${coverage.kind}`;
-    if (pill.className !== nextClass) pill.className = nextClass;
-    if (pill.textContent !== coverage.text) pill.textContent = coverage.text;
+    const coverage = coverageValue(sourceId, kind);
+    pill.className = `pill ${coverage.kind}`;
+    pill.textContent = coverage.text;
     return true;
   }
 
-  function setupCoverageObservers() {
-    const source = document.getElementById("fo-draft-source");
-    const coverage = document.getElementById("fo-coverage");
-    if (!source || !coverage) return false;
-    if (coverage.dataset.draftCoverageObserver === "true") return true;
+  function syncCoverage() {
+    const draftReady = syncCoverageRow("Draft-pick inventory", "fo-draft-source", "draft");
+    const transactionReady = syncCoverageRow("Transaction ledger", "fo-transaction-source", "transaction");
+    return draftReady && transactionReady;
+  }
 
-    const sync = () => syncDraftCoverage();
-    new MutationObserver(sync).observe(source, { childList: true, characterData: true, subtree: true, attributes: true });
+  function setupCoverageObservers() {
+    const coverage = document.getElementById("fo-coverage");
+    const draftSource = document.getElementById("fo-draft-source");
+    const transactionSource = document.getElementById("fo-transaction-source");
+    if (!coverage || !draftSource || !transactionSource) return false;
+    if (coverage.dataset.frontOfficeCoverageObserver === "true") return true;
+
+    const sync = () => syncCoverage();
+    new MutationObserver(sync).observe(draftSource, { childList: true, characterData: true, subtree: true, attributes: true });
+    new MutationObserver(sync).observe(transactionSource, { childList: true, characterData: true, subtree: true, attributes: true });
     new MutationObserver(sync).observe(coverage, { childList: true, subtree: true });
-    coverage.dataset.draftCoverageObserver = "true";
+    coverage.dataset.frontOfficeCoverageObserver = "true";
     sync();
     return true;
   }
 
   function initialize(attempt = 0) {
-    const upgraded = upgradeDraftCapital();
+    const draftReady = upgradeDraftCapital();
+    const transactionReady = upgradeTransactionCenter();
     const coverageReady = setupCoverageObservers();
-    syncDraftCoverage();
+    syncCoverage();
 
-    if ((!upgraded || !coverageReady) && attempt < 100) {
+    if ((!draftReady || !transactionReady || !coverageReady) && attempt < 120) {
       setTimeout(() => initialize(attempt + 1), 50);
     }
   }
 
+  window.ArchersCollapsibleSections = { upgradeSection };
   window.addEventListener("DOMContentLoaded", () => initialize());
 })();
