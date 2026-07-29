@@ -1,0 +1,116 @@
+.roster-directory-panel {
+  margin-top: 16px;
+}
+
+.roster-directory-head {
+  align-items: center;
+}
+
+.roster-directory-summary {
+  color: var(--muted);
+  font-size: .84rem;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.roster-table-wrap {
+  border-color: var(--line);
+}
+
+.roster-directory-loading {
+  padding: 16px;
+}
+
+.roster-table {
+  min-width: 900px;
+}
+
+.roster-table th:nth-child(1),
+.roster-table td:nth-child(1),
+.roster-table th:nth-child(2),
+.roster-table td:nth-child(2),
+.roster-table th:nth-child(3),
+.roster-table td:nth-child(3),
+.roster-table th:nth-child(5),
+.roster-table td:nth-child(5),
+.roster-table th:nth-child(6),
+.roster-table td:nth-child(6) {
+  text-align: left;
+}
+
+.roster-player-row.practice-squad td {
+  background: rgba(224, 187, 98, .035);
+}
+
+.roster-player-row.practice-squad td:first-child {
+  box-shadow: inset 3px 0 0 rgba(224, 187, 98, .55);
+}
+
+.roster-position {
+  color: var(--gold);
+  font-weight: 900;
+  width: 78px;
+}
+
+.roster-player-cell {
+  min-width: 230px;
+}
+
+.roster-player-cell strong {
+  display: block;
+  color: var(--cream);
+}
+
+.roster-player-cell span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.roster-ovr {
+  color: var(--cream);
+  font-size: 1.08rem;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+  text-align: center !important;
+  width: 70px;
+}
+
+.roster-role {
+  min-width: 260px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.roster-trait {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: .69rem;
+  font-weight: 900;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.roster-trait.xfactor { color: var(--red); }
+.roster-trait.superstar { color: var(--amber); }
+.roster-trait.star { color: var(--gold); }
+.roster-trait.hidden { color: #c3a7ff; }
+.roster-trait.normal { color: var(--muted); }
+
+@media (max-width: 650px) {
+  .roster-directory-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .roster-directory-summary {
+    text-align: left;
+    white-space: normal;
+  }
+}
