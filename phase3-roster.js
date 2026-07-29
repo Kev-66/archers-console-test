@@ -7,12 +7,21 @@
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
 
+  let allPlayers = [];
+  let rosterQuery = "";
+
   const escapeHtml = (value) => String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
+  const normalizeSearch = (value) => String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
   const rosterOrder = new Map([
     ["ACTIVE_ROSTER", 0],
@@ -61,10 +70,20 @@
           </div>
           <div id="roster-directory-summary" class="roster-directory-summary">Loading 69 profiles…</div>
         </div>
+        <div class="roster-directory-tools">
+          <label class="roster-search-label" for="roster-search">Search roster</label>
+          <input id="roster-search" class="roster-search" type="search" placeholder="Search name, position, status, trait or role" autocomplete="off" spellcheck="false">
+          <div id="roster-search-status" class="roster-search-status" aria-live="polite">Showing all profiles</div>
+        </div>
         <div id="roster-directory" class="table-wrap roster-table-wrap">
           <div class="empty roster-directory-loading">Loading organizational roster…</div>
         </div>
       </article>`);
+
+    document.getElementById("roster-search")?.addEventListener("input", (event) => {
+      rosterQuery = event.target.value;
+      renderRoster(allPlayers);
+    });
   }
 
   function sortPlayers(rows) {
@@ -78,19 +97,49 @@
     });
   }
 
+  function matchesSearch(row, query) {
+    if (!query) return true;
+    const data = row.data ?? {};
+    const searchable = [
+      row.resource_id,
+      data.player_name,
+      data.position,
+      data.position_code,
+      data.unit,
+      data.roster_status,
+      statusLabel(data.roster_status),
+      data.overall_rating,
+      data.development_trait,
+      data.role,
+      data.special_teams_role
+    ].map(normalizeSearch).join(" ");
+    return searchable.includes(query);
+  }
+
   function renderRoster(rows) {
     const target = document.getElementById("roster-directory");
     const summary = document.getElementById("roster-directory-summary");
-    if (!target || !summary) return;
+    const searchStatus = document.getElementById("roster-search-status");
+    if (!target || !summary || !searchStatus) return;
 
     const players = sortPlayers(rows);
     const activeCount = players.filter((row) => row.data?.roster_status === "ACTIVE_ROSTER").length;
     const practiceCount = players.filter((row) => row.data?.roster_status === "PRACTICE_SQUAD").length;
+    const normalizedQuery = normalizeSearch(rosterQuery);
+    const visiblePlayers = players.filter((row) => matchesSearch(row, normalizedQuery));
 
     summary.textContent = `${players.length} profiles • ${activeCount} active • ${practiceCount} practice squad`;
+    searchStatus.textContent = normalizedQuery
+      ? `Showing ${visiblePlayers.length} of ${players.length} profiles`
+      : `Showing all ${players.length} profiles`;
 
     if (!players.length) {
       target.innerHTML = '<div class="empty roster-directory-loading">No console-visible player profiles were returned.</div>';
+      return;
+    }
+
+    if (!visiblePlayers.length) {
+      target.innerHTML = `<div class="empty roster-directory-loading">No players match “${escapeHtml(rosterQuery.trim())}”.</div>`;
       return;
     }
 
@@ -107,7 +156,7 @@
           </tr>
         </thead>
         <tbody>
-          ${players.map((row) => {
+          ${visiblePlayers.map((row) => {
             const data = row.data ?? {};
             const isPractice = data.roster_status === "PRACTICE_SQUAD";
             return `
@@ -140,14 +189,17 @@
       .order("resource_id");
 
     if (error) throw error;
-    renderRoster(data ?? []);
+    allPlayers = data ?? [];
+    renderRoster(allPlayers);
   }
 
   function showError(error) {
     ensureMarkup();
     const target = document.getElementById("roster-directory");
     const summary = document.getElementById("roster-directory-summary");
+    const searchStatus = document.getElementById("roster-search-status");
     if (summary) summary.textContent = "Roster unavailable";
+    if (searchStatus) searchStatus.textContent = "Search unavailable";
     if (target) {
       target.innerHTML = `<div class="empty roster-directory-loading">The roster directory could not load: ${escapeHtml(error?.message ?? error)}</div>`;
     }
