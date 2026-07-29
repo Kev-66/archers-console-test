@@ -52,12 +52,14 @@
   display: none;
 }
 
+.fo-collapsible-section.is-collapsed .fo-section-toggle,
 .fo-draft-capital.is-collapsed .fo-section-toggle {
   margin-bottom: 10px;
   border-bottom-color: var(--lineSoft);
 }
 
-.fo-draft-capital.is-collapsed .fo-draft-metrics {
+.fo-draft-capital.is-collapsed .fo-draft-metrics,
+.fo-transaction-center.is-collapsed .fo-transaction-metrics {
   margin-bottom: 0;
 }
 
