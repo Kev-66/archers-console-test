@@ -1,0 +1,424 @@
+openapi: 3.1.0
+info:
+  title: Draft a Dynasty Unified Operations
+  version: 3.0.5
+  description: Protected operations bridge for the St. Louis Archers and the full CFF.
+servers:
+  - url: https://oqbylwlkrabxvpdhugrf.supabase.co/functions/v1
+
+components:
+  securitySchemes:
+    archersActionKey:
+      type: apiKey
+      in: header
+      name: x-archers-key
+
+  schemas:
+    JsonObject:
+      type: object
+      additionalProperties: true
+
+    ResourceData:
+      type: object
+      description: Structured resource content. For league_news, preserve approved title, kicker, and article verbatim.
+      properties:
+        title:
+          type: string
+        kicker:
+          type: string
+        article:
+          type: string
+      additionalProperties: true
+
+    OperationPayload:
+      type: object
+      description: Native JSON payload for one validated operation. Do not stringify this object.
+      additionalProperties: false
+      properties:
+        expected_state_version:
+          type: integer
+          minimum: 0
+        event_type:
+          type: string
+        season:
+          type: integer
+        week:
+          type: integer
+        status:
+          type: string
+        visibility:
+          type: string
+          enum: [PRIVATE, CONSOLE]
+        provenance:
+          type: string
+        data:
+          $ref: "#/components/schemas/ResourceData"
+        state_patch:
+          $ref: "#/components/schemas/JsonObject"
+        patch:
+          $ref: "#/components/schemas/JsonObject"
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/JsonObject"
+        games:
+          type: array
+          items:
+            $ref: "#/components/schemas/JsonObject"
+
+        team_id:
+          type: string
+        team_name:
+          type: string
+        city:
+          type: string
+        nickname:
+          type: string
+        conference:
+          type: string
+        division:
+          type: string
+        alignment_status:
+          type: string
+        is_archers:
+          type: boolean
+        active:
+          type: boolean
+
+        game_id:
+          type: string
+        game_date:
+          type: string
+          format: date
+        away_team_id:
+          type: string
+        home_team_id:
+          type: string
+        away_score:
+          type: integer
+          minimum: 0
+        home_score:
+          type: integer
+          minimum: 0
+        archers_score:
+          type: integer
+          minimum: 0
+        opponent_score:
+          type: integer
+          minimum: 0
+        overtime:
+          type: boolean
+        neutral_site:
+          type: boolean
+        note:
+          type: string
+        schedule_note:
+          type: string
+        source_checkpoint_id:
+          type: string
+        opponent_team_id:
+          type: string
+        site:
+          type: string
+        kickoff_time_ct:
+          type: string
+
+        quarter:
+          type: integer
+          minimum: 0
+        clock_remaining:
+          type: string
+        possession_team_id:
+          type: string
+        field_position_label:
+          type: string
+        down:
+          type: integer
+          minimum: 1
+          maximum: 4
+        distance:
+          type: integer
+          minimum: 0
+        away_timeouts:
+          type: integer
+          minimum: 0
+          maximum: 3
+        home_timeouts:
+          type: integer
+          minimum: 0
+          maximum: 3
+        live:
+          $ref: "#/components/schemas/JsonObject"
+        metadata:
+          $ref: "#/components/schemas/JsonObject"
+
+        drive_number:
+          type: integer
+          minimum: 1
+        offense_team_id:
+          type: string
+        defense_team_id:
+          type: string
+        start_quarter:
+          type: integer
+        start_clock:
+          type: string
+        start_field_position:
+          type: string
+        end_quarter:
+          type: integer
+        end_clock:
+          type: string
+        end_field_position:
+          type: string
+        plays:
+          type: integer
+          minimum: 0
+        yards:
+          type: integer
+        result:
+          type: string
+        points:
+          type: integer
+          minimum: 0
+        time_of_possession:
+          type: string
+        summary:
+          type: string
+        stats_delta:
+          $ref: "#/components/schemas/JsonObject"
+
+        sequence_number:
+          type: integer
+        player_id:
+          type: string
+        player_name:
+          type: string
+        position:
+          type: string
+        stats:
+          $ref: "#/components/schemas/JsonObject"
+        reconciliation_status:
+          type: string
+          enum: [IN_PROGRESS, RECONCILED, NOT_TRACKED]
+        reason:
+          type: string
+
+    OperationRequest:
+      type: object
+      additionalProperties: false
+      required: [operation, payload, idempotency_key, summary, source_label]
+      properties:
+        operation:
+          type: string
+          enum:
+            - patch_franchise_state
+            - upsert_resource
+            - bulk_upsert_resources
+            - archive_resource
+            - upsert_team
+            - upsert_game
+            - bulk_upsert_games
+            - upsert_schedule
+            - start_game
+            - update_live_game
+            - record_drive
+            - record_game_event
+            - upsert_team_stats
+            - upsert_player_stats
+            - finalize_game
+            - create_snapshot
+        resource_type:
+          type: [string, "null"]
+        resource_id:
+          type: [string, "null"]
+        payload:
+          $ref: "#/components/schemas/OperationPayload"
+        expected_version:
+          type: [integer, "null"]
+          minimum: 0
+        idempotency_key:
+          type: string
+          minLength: 4
+          maxLength: 180
+        summary:
+          type: string
+          minLength: 1
+        exact_kevin_text:
+          type: [string, "null"]
+        source_label:
+          type: string
+          enum: [USER_EXPLICIT, LIVE_SESSION_LOG, CHECKPOINT, CORRECTION, SYSTEM]
+        dry_run:
+          type: boolean
+          default: false
+
+    OperationResponse:
+      type: object
+      properties:
+        dry_run:
+          type: boolean
+        operation:
+          type: string
+        resource_type:
+          type: [string, "null"]
+        resource_id:
+          type: [string, "null"]
+        expected_version:
+          type: [integer, "null"]
+        idempotency_key:
+          type: string
+        source_label:
+          type: string
+        summary:
+          type: string
+        payload:
+          $ref: "#/components/schemas/OperationPayload"
+        current_state_version:
+          type: integer
+        state_version:
+          type: integer
+        event_id:
+          type: integer
+        result:
+          $ref: "#/components/schemas/JsonObject"
+        idempotent_replay:
+          type: boolean
+        note:
+          type: string
+        error:
+          type: string
+        code:
+          type: [string, "null"]
+        details:
+          type: [string, "null"]
+        hint:
+          type: [string, "null"]
+      additionalProperties: true
+
+security:
+  - archersActionKey: []
+
+paths:
+  /archers-franchise:
+    get:
+      operationId: getArchersOperationsState
+      summary: Read current dynasty operations state
+      description: Read franchise, league, game, resource, audit, or capability data before play or a write.
+      x-openai-isConsequential: false
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            default: snapshot
+            enum: [snapshot, league, game, resources, audit, capabilities]
+        - name: season
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 2026
+        - name: week
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: game_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: resource_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: resource_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: include_archived
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+      responses:
+        "200":
+          description: Requested operational state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonObject"
+        "400":
+          description: Invalid read request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+
+    post:
+      operationId: executeArchersOperation
+      summary: Execute one validated dynasty operation
+      description: Perform one protected write or dry run with version checks, idempotency, audit logging, soft archive, and atomic game finalization.
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationRequest"
+      responses:
+        "200":
+          description: Successful operation or dry-run result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        "409":
+          description: Version, duplicate, locked-final, or validation conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
