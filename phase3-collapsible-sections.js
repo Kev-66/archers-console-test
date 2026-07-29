@@ -131,8 +131,9 @@
     if (!pill) return false;
 
     const coverage = coverageValue(sourceId, kind);
-    pill.className = `pill ${coverage.kind}`;
-    pill.textContent = coverage.text;
+    const nextClass = `pill ${coverage.kind}`;
+    if (pill.className !== nextClass) pill.className = nextClass;
+    if (pill.textContent !== coverage.text) pill.textContent = coverage.text;
     return true;
   }
 
