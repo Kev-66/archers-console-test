@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: edge-function-archers-franchise.ts
+@@
+ function getAdminKey(): string | undefined {
++  // Prefer the legacy service-role JWT while the new secret-key exchange is
++  // intermittently producing PGRST303 "JWT issued at future" responses.
++  // This credential is injected by Supabase and never leaves the Edge Function.
++  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
++  if (serviceRoleKey) return serviceRoleKey;
++
++  // Fall back to the current named secret-key map when the legacy key is absent.
+   const currentKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+   if (currentKeys) {
+     try {
+       const parsed = JSON.parse(currentKeys) as Record<string, string>;
+       const firstKey = Object.values(parsed)[0];
+       if (parsed.default || firstKey) return parsed.default ?? firstKey;
+     } catch {
+-      // Fall through to the legacy service-role key.
++      // No usable named secret key was found.
+     }
+   }
+-  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
++
++  return undefined;
+ }
+*** End Patch
