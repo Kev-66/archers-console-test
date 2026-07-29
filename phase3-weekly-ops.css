@@ -1,0 +1,491 @@
+.wo-page-heading {
+  align-items: center;
+}
+
+.wo-live-status {
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.wo-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.wo-metric-card {
+  min-height: 120px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(18, 36, 31, .97), rgba(11, 24, 20, .97));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .16);
+}
+
+.wo-metric-card span,
+.wo-metric-card small {
+  display: block;
+}
+
+.wo-metric-card span {
+  color: #8fa99f;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.wo-metric-card strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--cream);
+  font-size: 1.55rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.wo-metric-card small {
+  margin-top: 9px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.wo-full-section {
+  margin-bottom: 16px;
+}
+
+.wo-section-heading {
+  align-items: center;
+}
+
+.wo-full-section.is-collapsed .fo-section-toggle {
+  margin-bottom: 0;
+  border-bottom-color: transparent;
+}
+
+.wo-two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+
+.wo-next-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  border: 1px solid rgba(224, 187, 98, .5);
+  border-radius: 16px;
+  padding: 18px;
+  background: rgba(224, 187, 98, .055);
+}
+
+.wo-next-card h3 {
+  margin: 7px 0 0;
+  color: var(--cream);
+  font-size: 1.12rem;
+}
+
+.wo-next-card p {
+  margin: 7px 0 0;
+}
+
+.wo-context-line,
+.wo-choice-summary,
+.wo-data-note,
+.wo-opponent-kickoff,
+.wo-dialog-note,
+.wo-copy-status {
+  color: var(--muted);
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.wo-context-line {
+  margin-top: 9px;
+}
+
+.wo-review-button,
+.wo-primary-button,
+.wo-secondary-button {
+  border-radius: 11px;
+  padding: 10px 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.wo-review-button,
+.wo-primary-button {
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.wo-review-button:hover,
+.wo-primary-button:hover {
+  filter: brightness(1.06);
+}
+
+.wo-secondary-button {
+  border: 1px solid var(--line);
+  background: rgba(5, 16, 13, .72);
+  color: var(--cream);
+}
+
+.wo-decision-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid var(--lineSoft);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(5, 16, 13, .5);
+}
+
+.wo-decision-card + .wo-decision-card {
+  margin-top: 10px;
+}
+
+.wo-decision-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.wo-decision-head h3 {
+  color: var(--cream);
+}
+
+.wo-decision-card p {
+  margin: 6px 0 0;
+}
+
+.wo-choice-summary {
+  margin-top: 7px;
+}
+
+.wo-opponent-name {
+  color: var(--cream);
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.wo-opponent-kickoff {
+  margin-top: 4px;
+}
+
+.wo-opponent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin: 15px 0 0;
+}
+
+.wo-opponent-grid > div {
+  border: 1px solid var(--lineSoft);
+  border-radius: 12px;
+  padding: 11px;
+  background: rgba(5, 16, 13, .5);
+}
+
+.wo-opponent-grid dt {
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.wo-opponent-grid dd {
+  margin: 5px 0 0;
+  color: var(--cream);
+  font-weight: 900;
+}
+
+.wo-data-note {
+  margin-top: 12px;
+}
+
+.wo-player-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--cream);
+  font: inherit;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wo-player-link:hover {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.wo-ps-banner {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.wo-ps-banner > div {
+  border: 1px solid var(--lineSoft);
+  border-radius: 13px;
+  padding: 12px;
+  background: rgba(5, 16, 13, .5);
+}
+
+.wo-ps-banner span,
+.wo-ps-banner strong {
+  display: block;
+}
+
+.wo-ps-banner span {
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.wo-ps-banner strong {
+  margin-top: 6px;
+  color: var(--cream);
+}
+
+.wo-ps-table {
+  min-width: 880px;
+}
+
+.wo-ps-table th:nth-child(1),
+.wo-ps-table td:nth-child(1),
+.wo-ps-table th:nth-child(2),
+.wo-ps-table td:nth-child(2),
+.wo-ps-table th:nth-child(4),
+.wo-ps-table td:nth-child(4),
+.wo-ps-table th:nth-child(6),
+.wo-ps-table td:nth-child(6) {
+  text-align: left;
+}
+
+.wo-ps-table .roster-player-row {
+  cursor: pointer;
+}
+
+.wo-ps-table .roster-player-row:hover td {
+  background: rgba(224, 187, 98, .065);
+}
+
+.wo-safety-card .guardrail {
+  margin-top: 4px;
+}
+
+.wo-decision-dialog {
+  width: min(760px, calc(100% - 28px));
+  max-height: min(88vh, 900px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(18, 36, 31, .99), rgba(8, 20, 17, .99));
+  color: var(--cream);
+  box-shadow: 0 36px 100px rgba(0, 0, 0, .55);
+}
+
+.wo-decision-dialog::backdrop {
+  background: rgba(2, 8, 7, .78);
+  backdrop-filter: blur(4px);
+}
+
+.wo-dialog-shell {
+  position: relative;
+  padding: 24px;
+  overflow-y: auto;
+  max-height: min(88vh, 900px);
+}
+
+.wo-dialog-shell > h2 {
+  margin: 8px 45px 18px 0;
+  font-size: 1.35rem;
+}
+
+.wo-dialog-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(5, 16, 13, .72);
+  color: var(--cream);
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.wo-dialog-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: .8rem;
+  margin-bottom: 15px;
+}
+
+.wo-dialog-section,
+.wo-choice-fieldset,
+.wo-prompt-preview {
+  border: 1px solid var(--lineSoft);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(5, 16, 13, .5);
+}
+
+.wo-dialog-section h3,
+.wo-dialog-section p {
+  margin: 0;
+}
+
+.wo-dialog-section p {
+  margin-top: 7px;
+}
+
+.wo-choice-fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.wo-choice-fieldset legend {
+  padding: 0 7px;
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.wo-choice-fieldset label {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.wo-instruction-label {
+  display: block;
+  margin: 14px 0 7px;
+  color: var(--cream);
+  font-weight: 900;
+}
+
+#wo-decision-instruction {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(4, 14, 12, .82);
+  color: var(--cream);
+  font: inherit;
+  line-height: 1.45;
+}
+
+#wo-decision-instruction:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.wo-prompt-preview {
+  margin-top: 13px;
+}
+
+.wo-prompt-preview summary {
+  cursor: pointer;
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.wo-prompt-preview pre {
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font: .76rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.wo-dialog-note {
+  margin-top: 12px;
+}
+
+.wo-dialog-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.wo-copy-status {
+  min-height: 1.2em;
+  margin-top: 10px;
+  color: var(--green);
+}
+
+@media (max-width: 1000px) {
+  .wo-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wo-two-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .wo-page-heading,
+  .wo-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .wo-live-status {
+    text-align: left;
+    white-space: normal;
+  }
+
+  .wo-metrics,
+  .wo-ps-banner,
+  .wo-opponent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wo-metric-card {
+    min-height: 0;
+  }
+
+  .wo-next-card,
+  .wo-decision-card {
+    grid-template-columns: 1fr;
+  }
+
+  .wo-review-button {
+    width: 100%;
+  }
+
+  .wo-decision-head {
+    flex-direction: column;
+  }
+
+  .wo-dialog-shell {
+    padding: 20px 16px;
+  }
+
+  .wo-dialog-actions {
+    flex-direction: column;
+  }
+}
