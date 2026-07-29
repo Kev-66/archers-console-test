@@ -1,0 +1,250 @@
+.fo-transaction-center {
+  margin-bottom: 16px;
+}
+
+.fo-transaction-heading {
+  align-items: center;
+}
+
+.fo-transaction-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.fo-transaction-metric {
+  border: 1px solid var(--lineSoft);
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: rgba(5, 16, 13, .58);
+}
+
+.fo-transaction-metric span,
+.fo-transaction-metric small {
+  display: block;
+}
+
+.fo-transaction-metric span {
+  color: #8fa99f;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.fo-transaction-metric strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--cream);
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.fo-transaction-metric small {
+  margin-top: 7px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.fo-transaction-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.fo-transaction-filter {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: rgba(5, 16, 13, .7);
+  color: var(--muted);
+  font: inherit;
+  font-size: .75rem;
+  font-weight: 850;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease, color .16s ease;
+}
+
+.fo-transaction-filter:hover {
+  border-color: rgba(224, 187, 98, .6);
+  color: var(--cream);
+}
+
+.fo-transaction-filter.active {
+  border-color: var(--gold);
+  background: rgba(224, 187, 98, .12);
+  color: var(--gold);
+}
+
+.fo-transaction-filter:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.fo-transaction-list {
+  display: grid;
+  gap: 10px;
+}
+
+.fo-transaction-entry {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  border: 1px solid var(--lineSoft);
+  border-radius: 15px;
+  padding: 14px;
+  background: rgba(5, 16, 13, .48);
+}
+
+.fo-transaction-marker {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--gold);
+  background: rgba(224, 187, 98, .055);
+  font-size: .82rem;
+  font-weight: 950;
+}
+
+.fo-transaction-marker.trade { color: #8fd6ff; }
+.fo-transaction-marker.signing { color: var(--green); }
+.fo-transaction-marker.release { color: var(--red); }
+.fo-transaction-marker.practice_squad { color: var(--amber); }
+.fo-transaction-marker.contract { color: var(--gold); }
+.fo-transaction-marker.draft_pick { color: #c3a7ff; }
+
+.fo-transaction-entry-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.fo-transaction-entry-head h3 {
+  margin: 2px 0 0;
+  color: var(--cream);
+}
+
+.fo-transaction-kicker {
+  color: var(--gold);
+  font-size: .64rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.fo-transaction-meta {
+  margin-top: 5px;
+  color: #789187;
+  font-size: .72rem;
+}
+
+.fo-transaction-summary,
+.fo-transaction-cap-note {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.5;
+}
+
+.fo-transaction-cap-note strong,
+.fo-transaction-players > strong,
+.fo-transaction-assets > strong {
+  color: var(--cream);
+}
+
+.fo-transaction-players,
+.fo-transaction-assets {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--lineSoft);
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.fo-transaction-players > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.fo-transaction-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: rgba(11, 28, 23, .8);
+  color: var(--cream);
+  font: inherit;
+  font-size: .72rem;
+}
+
+button.fo-transaction-player {
+  cursor: pointer;
+}
+
+button.fo-transaction-player:hover,
+button.fo-transaction-player:focus-visible {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.fo-transaction-assets ul {
+  margin: 7px 0 0;
+  padding-left: 18px;
+}
+
+.fo-transaction-assets li + li {
+  margin-top: 4px;
+}
+
+.fo-transaction-note {
+  margin: 12px 1px 0;
+  color: var(--muted);
+  font-size: .74rem;
+  line-height: 1.45;
+}
+
+.fo-transaction-empty {
+  padding: 18px;
+}
+
+.fo-transaction-center.is-collapsed .fo-transaction-metrics {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1000px) {
+  .fo-transaction-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .fo-transaction-heading,
+  .fo-transaction-entry-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .fo-transaction-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .fo-transaction-entry {
+    grid-template-columns: 34px minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .fo-transaction-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+}
