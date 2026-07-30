@@ -1,0 +1,12 @@
+run_id=30590722089
+job_status=success
+source_commit=291608b3eaf57a96771c9f01fc2c3eb64f5bf72f
+export_summary=
+{
+  "active_player_count": 69,
+  "active_resource_count": 77,
+  "active_staff_count": 0,
+  "active_standalone_contract_count": 0,
+  "backend_version": "3.3.0",
+  "state_version": 36
+}
