@@ -1,0 +1,133 @@
+name: Contract Normalization v1 Diagnostic
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: ${{ github.event.head_commit.message == 'RUN CONTRACT NORMALIZATION V1 DIAGNOSTIC' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PROJECT_REF: oqbylwlkrabxvpdhugrf
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      ARCHERS_ACTION_KEY: ${{ secrets.ARCHERS_ACTION_KEY }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Build exact current normalization transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf evidence diagnostic-work
+          mkdir -p evidence diagnostic-work
+          python scripts/export_contract_normalization_source.py
+          python scripts/build_contract_normalization_plan.py
+          python scripts/build_contract_normalization_execution_sql.py
+          cd diagnostic-work
+          supabase init --force
+          supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Execute normalization inside forced rollback
+        id: diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          POOLER_URL="$(cat diagnostic-work/supabase/.temp/pooler-url)"
+          {
+            echo 'BEGIN;'
+            cat evidence/contract-normalization-execution-v1.sql
+            echo 'ROLLBACK;'
+          } > evidence/contract-normalization-diagnostic-transaction.sql
+
+          set +e
+          PGPASSWORD="$SUPABASE_DB_PASSWORD" psql "$POOLER_URL" \
+            --set=ON_ERROR_STOP=1 \
+            --file=evidence/contract-normalization-diagnostic-transaction.sql \
+            > evidence/contract-normalization-diagnostic-output.txt 2>&1
+          diagnostic_exit=$?
+          set -e
+          echo "$diagnostic_exit" > evidence/contract-normalization-diagnostic-exit-code.txt
+          cat evidence/contract-normalization-diagnostic-output.txt
+
+      - name: Prove diagnostic transaction left canon untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf evidence/post-diagnostic
+          mkdir -p evidence/post-diagnostic
+          cp scripts/export_contract_normalization_source.py evidence/post-diagnostic/export.py
+          (
+            cd evidence/post-diagnostic
+            mkdir -p evidence
+            python export.py
+          )
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('evidence/post-diagnostic/evidence')
+          summary = json.loads((root / 'export-summary.json').read_text(encoding='utf-8'))
+          assert summary['state_version'] == 36, summary
+          assert summary['active_staff_count'] == 0, summary
+          assert summary['active_player_count'] == 69, summary
+          result = {
+              'state_version_after_diagnostic': summary['state_version'],
+              'active_staff_after_diagnostic': summary['active_staff_count'],
+              'active_players_after_diagnostic': summary['active_player_count'],
+              'diagnostic_transaction_persisted': False,
+              'diagnostic_exit_code': int(Path('evidence/contract-normalization-diagnostic-exit-code.txt').read_text().strip()),
+          }
+          Path('evidence/contract-normalization-diagnostic-summary.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          PY
+
+      - name: Preserve diagnostic evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-normalization-v1-diagnostic-${{ github.run_id }}
+          path: evidence
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Publish non-secret diagnostic status
+        if: always()
+        shell: bash
+        env:
+          DIAGNOSTIC_JOB_STATUS: ${{ job.status }}
+          DIAGNOSTIC_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "run_id=$DIAGNOSTIC_RUN_ID"
+            echo "job_status=$DIAGNOSTIC_JOB_STATUS"
+            echo "source_commit=$GITHUB_SHA"
+            if [ -f evidence/contract-normalization-diagnostic-summary.json ]; then
+              echo "diagnostic_summary="
+              cat evidence/contract-normalization-diagnostic-summary.json
+            else
+              echo "diagnostic_summary=unavailable"
+            fi
+          } > contract-normalization-diagnostic-status.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B diagnostic-report origin/main
+          git add contract-normalization-diagnostic-status.txt
+          git commit -m "Record Contract Normalization v1 diagnostic status" || true
+          git push origin HEAD:main
