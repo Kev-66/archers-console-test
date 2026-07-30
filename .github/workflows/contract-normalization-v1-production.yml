@@ -37,7 +37,9 @@ jobs:
           test -f scripts/build_contract_normalization_plan.py
           test -f scripts/build_contract_normalization_execution_sql.py
           test -f scripts/verify_contract_normalization_production.py
+          test -f phase3-3-season-rollover-v1.sql
           test -f phase3-3-contract-normalization-v1.sql
+          grep -q 'archers_rollover_season' phase3-3-season-rollover-v1.sql
           grep -q 'archers_normalize_contracts_v1' phase3-3-contract-normalization-v1.sql
 
       - name: Install Supabase CLI
@@ -82,6 +84,8 @@ jobs:
           cd deploy-work
           supabase init --force
           mkdir -p supabase/migrations
+          cp ../phase3-3-season-rollover-v1.sql \
+            supabase/migrations/20260730210000_backend_3_3_0_season_rollover.sql
           cp ../phase3-3-contract-normalization-v1.sql \
             supabase/migrations/20260730234000_contract_normalization_v1_function.sql
           cp ../evidence/contract-normalization-execution-v1.sql \
