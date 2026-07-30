@@ -173,3 +173,8 @@ Backend 3.3.0 operation verification reads `affected_resource_versions` from the
 5. Normalize every reported legacy or malformed contract before any real rollover.
 6. Execute only at the intended offseason boundary after Kevin approval.
 7. Run `operation_verification` using the execution idempotency key.
+
+
+## No automatic options
+
+Options are reported as due or unresolved. The rollover engine never exercises or declines an option.
