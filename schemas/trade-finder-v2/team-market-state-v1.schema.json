@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/team-market-state-v1.schema.json",
+  "title": "Draft a Dynasty Team Market State v1",
+  "type": "object",
+  "required": [
+    "profile_schema_version",
+    "market_id",
+    "as_of_week",
+    "teams"
+  ],
+  "properties": {
+    "profile_schema_version": {
+      "const": 1
+    },
+    "market_id": {
+      "const": "team-market-state"
+    },
+    "as_of_week": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "review_after_week": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "summary": {
+      "type": "string"
+    },
+    "teams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "posture",
+          "confidence"
+        ],
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "team_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "posture": {
+            "enum": [
+              "BUYER",
+              "SELLER",
+              "HOLD",
+              "HYBRID",
+              "REBUILDER",
+              "CONTENDER"
+            ]
+          },
+          "confidence": {
+            "enum": [
+              "MODEL_INFERENCE",
+              "PUBLIC_REPORT",
+              "STAFF_SCOUTED",
+              "TEAM_CONTACT",
+              "VERIFIED"
+            ]
+          },
+          "buying_positions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "selling_positions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preferred_assets": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "PICKS",
+                "DRAFT_CAPITAL",
+                "YOUNG_PLAYERS",
+                "IMMEDIATE_STARTERS",
+                "LOW_COST_PLAYERS",
+                "CONDITIONAL_ASSETS"
+              ]
+            }
+          },
+          "avoided_assets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cap_pressure": {
+            "enum": [
+              "LOW",
+              "NORMAL",
+              "HIGH"
+            ]
+          },
+          "competitive_window": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "as_of_week": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "review_after_week": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

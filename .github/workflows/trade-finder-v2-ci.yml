@@ -1,0 +1,31 @@
+name: Trade Finder v2 CI
+
+on:
+  push:
+    branches:
+      - agent/trade-finder-v2-market-engine
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Parse Trade Finder engine
+        run: node --check phase3-trade-finder-engine.js
+
+      - name: Parse Trade Center UI
+        run: node --check phase3-trade-center.js
+
+      - name: Run market engine regressions
+        run: node tests/trade-finder-v2/engine-validation.cjs
+
+      - name: Run Trade Finder static validation
+        run: node tests/trade-finder-v2/static-validation.mjs

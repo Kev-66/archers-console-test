@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/league-player-index-v1.schema.json",
+  "title": "Draft a Dynasty League Player Index v1",
+  "type": "object",
+  "required": [
+    "profile_schema_version",
+    "index_id",
+    "as_of_week",
+    "players"
+  ],
+  "properties": {
+    "profile_schema_version": {
+      "const": 1
+    },
+    "index_id": {
+      "const": "league-player-index"
+    },
+    "as_of_week": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "review_after_week": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "players": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "player_id",
+          "team_id",
+          "player_name",
+          "position"
+        ],
+        "properties": {
+          "player_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "team_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "team_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "player_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "position": {
+            "type": "string",
+            "minLength": 1
+          },
+          "position_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "overall_rating": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 40,
+            "maximum": 99
+          },
+          "age": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 18,
+            "maximum": 50
+          },
+          "development_trait": {
+            "enum": [
+              "NORMAL",
+              "HIDDEN",
+              "STAR",
+              "SUPERSTAR",
+              "XFACTOR"
+            ]
+          },
+          "role": {
+            "enum": [
+              "DEPTH",
+              "ROTATION",
+              "STARTER",
+              "PREMIUM"
+            ]
+          },
+          "cap_hit_2026_millions": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "contract_years_remaining": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 10
+          },
+          "roster_status": {
+            "type": "string"
+          },
+          "contract_summary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "football_notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_week": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
