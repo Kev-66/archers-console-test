@@ -9,32 +9,9 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  # BEGIN TEMPORARY ROLLOVER HARDENING JOB
-  harden:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: agent/season-rollover-engine-v1
-          fetch-depth: 0
-
-      - name: Apply fingerprint and scale hardening
-        run: python tools/harden-season-rollover-v1.py
-
-      - name: Commit non-workflow hardening
-        run: |
-          git checkout -- .github/workflows/backend-3.3.0-ci.yml
-          git rm tools/harden-season-rollover-v1.py
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Harden rollover fingerprints and verification scale"
-          git push origin HEAD:agent/season-rollover-engine-v1
-  # END TEMPORARY ROLLOVER HARDENING JOB
-
   validate:
     runs-on: ubuntu-latest
     services:
@@ -104,9 +81,12 @@ jobs:
               '"archers_rollover_season"',
               'expected_state_version is required for rollover_season',
               'affected_resource_versions_verified',
+              'readResourceRefsBatched',
+              'affected_resource_versions_truncated',
           ]
           for token in required:
               assert token in text, token
+          assert '.slice(0, 250);\n  const additionalRows' not in text
 
           print("edge_source_sha256=" + hashlib.sha256(versioned).hexdigest())
           print("edge_source_bytes=" + str(len(versioned)))
@@ -185,6 +165,7 @@ jobs:
               "option was exercised",
               "staff contract",
               "legacy contract",
+              "duplicate fingerprint",
           ]:
               assert token.lower() in regressions.lower(), token
 
