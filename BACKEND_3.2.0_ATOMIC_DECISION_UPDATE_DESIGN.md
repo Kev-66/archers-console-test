@@ -45,7 +45,7 @@ The current backend can read one decision safely through `decision_context`, but
     },
     "history_entry": {
       "status": "RESOLVED",
-      "summary": "Approved the verified option.",
+      "note": "Approved the verified option.",
       "state_version": null
     }
   }
@@ -80,6 +80,7 @@ Initial version:
 
 - `status`
 - `priority`
+- `summary`
 - `due_date`
 - `due_week`
 - `deadline_label`
@@ -102,23 +103,25 @@ Fields such as `decision_id`, `created_at`, `created_week`, `created_state_versi
 Supported normalized statuses:
 
 - `OPEN`
-- `PENDING`
+- `READY_FOR_REVIEW`
+- `AWAITING_KEVIN`
+- `BLOCKED`
 - `DEFERRED`
 - `RESOLVED`
-- `CLOSED`
-- `CANCELLED`
+- `WITHDRAWN`
+- `EXPIRED`
 
 Rules:
 
 1. Status values are normalized to uppercase.
-2. A transition to `RESOLVED`, `CLOSED`, or `CANCELLED` requires a non-null `resolution` object or an existing resolution already on the record.
+2. A transition to `RESOLVED`, `WITHDRAWN`, or `EXPIRED` requires a non-null `resolution` object or an existing resolution already on the record.
 3. A transition from a terminal status back to a non-terminal status requires `source_label: CORRECTION`.
 4. `history_entry.status`, when supplied, must match the resulting decision status.
 5. The backend supplies the resulting state version to the appended history entry. A caller-provided null placeholder is accepted; a conflicting numeric value is rejected.
 
 ## Atomic behavior
 
-Inside one database transaction, the RPC must:
+Inside one database transaction, the dedicated `archers_update_decision` RPC must:
 
 1. Lock the franchise state row and Decision Queue resource row.
 2. Verify `expected_state_version`.
@@ -133,6 +136,7 @@ Inside one database transaction, the RPC must:
 11. Fill the appended history entry with the resulting state version.
 12. Write one audit operation and one canon event.
 13. Return the updated decision, queue version, resulting state version, operation ID, and event ID.
+14. Refresh the compact legacy `state.open_decisions` projection from the updated queue so `core_state` and snapshot fallback cannot drift.
 
 Any failure rolls back the entire transaction.
 
@@ -151,6 +155,7 @@ Any failure rolls back the entire transaction.
   "decision": {},
   "updated_fields": ["status", "resolution"],
   "unrelated_decisions_preserved": true,
+  "legacy_open_decisions_synchronized": true,
   "idempotent_replay": false
 }
 ```
@@ -203,7 +208,7 @@ Backend version: `3.2.0`
 
 ## Database changes
 
-Create a versioned SQL migration that updates `archers_execute_operation` to implement `update_decision` atomically.
+Create a versioned SQL migration that adds a dedicated `archers_update_decision` RPC. The unified Edge endpoint routes only `update_decision` to it; existing `archers_execute_operation` behavior remains unchanged.
 
 The SQL migration must be committed to GitHub. The Edge Function source alone is not sufficient evidence of the database behavior.
 
