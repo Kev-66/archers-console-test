@@ -1,15 +1,19 @@
-run_id=30591674798
-job_status=failure
-source_commit=cf6a4f8d620b065a5c6217e4e55235bdf604d81b
-normalization_summary=verification_unavailable
-plan_summary=
+run_id=30592065917
+job_status=success
+source_commit=82050c45446a94badd4c453f8c973c0796be8d83
+normalization_summary=
 {
-  "active_roster_and_practice_squad_2026_cap_millions": 249.0075,
-  "expiring_after_2026": 27,
-  "player_updates": 69,
+  "backend_version": "3.3.0",
+  "contracts_expiring_entering_2027": 27,
+  "contracts_in_final_year_during_2027": 27,
+  "established_staff_contracts": 16,
+  "normalization_operation_verified": true,
+  "normalized_player_contracts": 69,
+  "real_rollover_executed": false,
+  "rollover_blocker_count": 0,
+  "rollover_processable_contracts": 85,
+  "rollover_ready_to_execute": true,
+  "rollover_warning_count": 24,
   "season": 2026,
-  "staff_2026_payroll_millions": 28.8,
-  "staff_inserts": 16,
-  "state_version": 36,
-  "unresolved_fifth_year_options": 2
+  "state_version": 37
 }
