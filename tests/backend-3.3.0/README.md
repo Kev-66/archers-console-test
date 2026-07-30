@@ -16,3 +16,5 @@ Coverage includes:
 - stale contract-resource fingerprint rejection;
 - atomic rollback on failure;
 - wrong-season rejection.
+
+The final pull-request validation runs this suite together with Edge parsing, schema checks, documentation checks, and the existing Trade Finder regressions.
