@@ -1,0 +1,54 @@
+name: Fix rollover regression versions
+
+on:
+  push:
+    branches:
+      - agent/season-rollover-engine-v1
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/season-rollover-engine-v1
+          fetch-depth: 0
+
+      - name: Remove remaining hard-coded state versions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("tests/backend-3.3.0/season-rollover-v1.sql")
+          text = path.read_text(encoding="utf-8")
+          replacements = [
+              (
+                  "  35,\n  'rollover-v1-2028-preview',",
+                  "  (select version from public.archers_franchise_state where id = 'stl-2026'),\n  'rollover-v1-2028-preview',",
+              ),
+              (
+                  "      35,\n      'rollover-v1-stale-execute',",
+                  "      (select (result ->> 'current_state_version')::integer from rollover_2028_preview),\n      'rollover-v1-stale-execute',",
+              ),
+              (
+                  "    35,\n    'rollover-v1-wrong-season-preview',",
+                  "    (select version from public.archers_franchise_state where id = 'stl-2026'),\n    'rollover-v1-wrong-season-preview',",
+              ),
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit(f"expected one match for {old!r}, found {text.count(old)}")
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Commit patch
+        run: |
+          git rm .github/workflows/fix-rollover-regression-versions.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove hard-coded rollover test versions"
+          git push origin HEAD:agent/season-rollover-engine-v1
