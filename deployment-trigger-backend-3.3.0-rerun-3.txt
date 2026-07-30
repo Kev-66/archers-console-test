@@ -1,0 +1,1 @@
+Authorized Backend 3.3.0 production deployment rerun after correcting the database password. Current Supabase incidents may affect Management API or Edge Function deployment; the guarded workflow must stop safely on any failure and must not execute a real season rollover.
