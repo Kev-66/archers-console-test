@@ -1,0 +1,23 @@
+name: Diagnose Backend 3.3.0 Production Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      - name: Lint production workflow
+        shell: bash
+        run: ./actionlint .github/workflows/backend-3.3.0-production-deploy.yml
