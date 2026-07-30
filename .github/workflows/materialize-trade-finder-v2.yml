@@ -1,0 +1,49 @@
+name: Materialize Trade Finder v2
+
+on:
+  push:
+    branches:
+      - agent/trade-finder-v2-market-engine
+    paths:
+      - '.trade-finder-v2-payload/**'
+      - '.github/workflows/materialize-trade-finder-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/trade-finder-v2-market-engine
+          fetch-depth: 0
+
+      - name: Expand validated source payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .trade-finder-v2-payload/part-* | base64 --decode > /tmp/trade-finder-v2.tar.gz
+          tar -xzf /tmp/trade-finder-v2.tar.gz
+          rm -rf .trade-finder-v2-payload
+
+      - name: Validate materialized source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check phase3-trade-finder-engine.js
+          node --check phase3-trade-center.js
+          node tests/trade-finder-v2/engine-validation.cjs
+          node tests/trade-finder-v2/static-validation.mjs
+
+      - name: Commit materialized Trade Finder
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add market-aware Trade Finder v2'
+          git push origin HEAD:agent/trade-finder-v2-market-engine
