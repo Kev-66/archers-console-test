@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/trade-market-v1.schema.json",
+  "title": "Draft a Dynasty Trade Market v1",
+  "type": "object",
+  "required": [
+    "profile_schema_version",
+    "market_id",
+    "as_of_week",
+    "entries"
+  ],
+  "properties": {
+    "profile_schema_version": {
+      "const": 1
+    },
+    "market_id": {
+      "const": "trade-market"
+    },
+    "as_of_week": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "review_after_week": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "market_id",
+          "player_id",
+          "team_id",
+          "availability",
+          "evidence"
+        ],
+        "properties": {
+          "market_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "player_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "team_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "player": {
+            "type": "object"
+          },
+          "availability": {
+            "enum": [
+              "ACTIVELY_SHOPPED",
+              "AVAILABLE",
+              "LISTENING",
+              "UNLIKELY",
+              "UNAVAILABLE",
+              "FRANCHISE_CORNERSTONE"
+            ]
+          },
+          "evidence": {
+            "enum": [
+              "MODEL_INFERENCE",
+              "PUBLIC_REPORT",
+              "STAFF_SCOUTED",
+              "TEAM_CONTACT",
+              "VERIFIED"
+            ]
+          },
+          "asking_multiplier": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0.5,
+            "maximum": 3
+          },
+          "asking_price": {
+            "type": "string"
+          },
+          "movable_reason": {
+            "type": "string"
+          },
+          "constraints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "desired_assets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rejected_assets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "as_of_week": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "review_after_week": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
