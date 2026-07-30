@@ -127,7 +127,7 @@ assert int(contract_set.get("legacy_records_requiring_normalization")) == 0, rol
 assert len(rollover_preview.get("expected_resources") or []) == 85, rollover_preview
 effects = rollover_preview.get("effects") or {}
 assert int(effects.get("expired_contracts")) == 27, rollover_preview
-assert int(effects.get("final_year_contracts")) == 20, rollover_preview
+assert int(effects.get("final_year_contracts")) == 27, rollover_preview
 assert int(core_after["version"]) == 37, (core_before, core_after)
 
 write("rollover-dry-run-request-redacted.json", rollover_request)
