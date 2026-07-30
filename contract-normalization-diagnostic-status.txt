@@ -1,0 +1,11 @@
+run_id=30591916632
+job_status=success
+source_commit=a6b849f6f63137889fac1965d5bdf179a7d25fef
+diagnostic_summary=
+{
+  "active_players_after_diagnostic": 69,
+  "active_staff_after_diagnostic": 0,
+  "diagnostic_exit_code": 3,
+  "diagnostic_transaction_persisted": false,
+  "state_version_after_diagnostic": 36
+}
