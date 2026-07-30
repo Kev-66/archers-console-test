@@ -1,0 +1,1 @@
+Authorized read-only export of current player, staff, contract, cap, and season source records for Contract Normalization Migration v1.
