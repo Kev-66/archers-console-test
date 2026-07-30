@@ -111,6 +111,7 @@ jobs:
 
           design = Path("BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md").read_text(encoding="utf-8")
           sql = Path("phase3-2-atomic-decision-update.sql").read_text(encoding="utf-8")
+          instructions = Path("DRAFT_A_DYNASTY_COMPACT_INSTRUCTIONS_v3.4.md").read_text(encoding="utf-8")
 
           for status in [
               "OPEN",
@@ -131,5 +132,9 @@ jobs:
 
           assert "legacy_open_decisions_synchronized" in design
           assert "v_open_decisions" in sql
-          print("documentation alignment passed")
+          assert instructions.startswith("DRAFT A DYNASTY • UNIFIED OPERATIONS • COMPACT INSTRUCTIONS v3.4")
+          assert "patch_franchise_state, update_decision, upsert_resource" in instructions
+          assert "target decision_queue/decision-queue and never resend the full queue" in instructions
+          assert len(instructions) <= 8000, len(instructions)
+          print(f"documentation alignment passed; instructions_characters={len(instructions)}")
           PY
