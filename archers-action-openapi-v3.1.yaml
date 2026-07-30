@@ -1,11 +1,8 @@
 openapi: 3.1.0
 info:
   title: St. Louis Archers Franchise Operations
-  version: 3.1.0
-  description: >
-    Protected read and write access for the Draft a Dynasty franchise. Prefer
-    compact or filtered reads over the full snapshot once structured resources
-    exist.
+  version: 3.1.1
+  description: Protected read and write access for the Draft a Dynasty franchise.
 servers:
   - url: https://oqbylwlkrabxvpdhugrf.supabase.co/functions/v1
 security:
@@ -15,12 +12,7 @@ paths:
     get:
       operationId: readArchersFranchise
       summary: Read scoped Archers franchise data
-      description: >
-        Read only the smallest scope needed. Use core_state for current week,
-        continuation, opponent, open decisions, medical flags and roster-operation
-        summaries. Use state_fields for exact selected state paths. Use resources
-        with filters and pagination for resource bodies. Avoid snapshot unless a
-        complete legacy response is specifically required.
+      description: Use core_state for current operations, state_fields for exact paths, and filtered resources for resource bodies. Avoid snapshot unless a complete legacy response is required.
       x-openai-isConsequential: false
       parameters:
         - name: scope
@@ -43,9 +35,7 @@ paths:
         - name: fields
           in: query
           required: false
-          description: >
-            Comma-separated state paths for state_fields, maximum 20. Examples:
-            timeline,open_decisions,opponent,medical,roster.week_three_protections_status.
+          description: Comma-separated state paths for state_fields, maximum 20.
           schema:
             type: string
         - name: resource_type
@@ -145,18 +135,23 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: "#/components/schemas/FranchiseResponse"
         "400":
           description: Invalid scope or parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     post:
       operationId: executeArchersOperation
       summary: Execute or dry-run a protected franchise operation
-      description: >
-        Perform one supported operation. payload must be a native JSON object.
-        Never stringify payload and never use payload_json in new calls.
+      description: Send payload as a native JSON object. Do not stringify it or use payload_json.
       x-openai-isConsequential: true
       requestBody:
         required: true
@@ -176,14 +171,22 @@ paths:
                 operation:
                   type: string
                 resource_type:
-                  type: [string, "null"]
+                  type:
+                    - string
+                    - "null"
                 resource_id:
-                  type: [string, "null"]
+                  type:
+                    - string
+                    - "null"
                 expected_version:
-                  type: [integer, "null"]
+                  type:
+                    - integer
+                    - "null"
                   minimum: 0
                 expected_state_version:
-                  type: [integer, "null"]
+                  type:
+                    - integer
+                    - "null"
                   minimum: 0
                 idempotency_key:
                   type: string
@@ -200,27 +203,144 @@ paths:
                     - CORRECTION
                     - SYSTEM
                 exact_kevin_text:
-                  type: [string, "null"]
+                  type:
+                    - string
+                    - "null"
                 dry_run:
                   type: boolean
                 payload:
-                  type: object
-                  additionalProperties: true
+                  $ref: "#/components/schemas/GenericObject"
       responses:
         "200":
           description: Dry-run or operation result
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: "#/components/schemas/OperationResponse"
         "400":
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "409":
           description: Version, state or operation conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
+  schemas:
+    GenericObject:
+      type: object
+      properties: {}
+      additionalProperties: true
+    FranchiseResponse:
+      type: object
+      properties:
+        id:
+          type:
+            - string
+            - "null"
+        version:
+          type:
+            - integer
+            - "null"
+        state:
+          $ref: "#/components/schemas/GenericObject"
+        fields:
+          $ref: "#/components/schemas/GenericObject"
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenericObject"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenericObject"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenericObject"
+        pagination:
+          $ref: "#/components/schemas/GenericObject"
+        backend_version:
+          type:
+            - string
+            - "null"
+        read_scopes:
+          type: array
+          items:
+            type: string
+        error:
+          type:
+            - string
+            - "null"
+      additionalProperties: true
+    OperationResponse:
+      type: object
+      properties:
+        dry_run:
+          type:
+            - boolean
+            - "null"
+        operation:
+          type:
+            - string
+            - "null"
+        resource_type:
+          type:
+            - string
+            - "null"
+        resource_id:
+          type:
+            - string
+            - "null"
+        expected_version:
+          type:
+            - integer
+            - "null"
+        current_state_version:
+          type:
+            - integer
+            - "null"
+        state_version:
+          type:
+            - integer
+            - "null"
+        payload:
+          $ref: "#/components/schemas/GenericObject"
+        result:
+          $ref: "#/components/schemas/GenericObject"
+        error:
+          type:
+            - string
+            - "null"
+      additionalProperties: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type:
+            - string
+            - "null"
+        details:
+          type:
+            - string
+            - "null"
+        hint:
+          type:
+            - string
+            - "null"
+      additionalProperties: true
   securitySchemes:
     ArchersKey:
       type: apiKey
