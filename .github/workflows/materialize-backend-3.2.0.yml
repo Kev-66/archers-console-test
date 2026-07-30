@@ -10,6 +10,15 @@ on:
       - scripts/materialize-backend-3.2.0.py
       - scripts/normalize-backend-3.2.0.py
       - .github/workflows/materialize-backend-3.2.0.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - phase3-2-atomic-decision-update.sql
+      - BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md
+      - scripts/materialize-backend-3.2.0.py
+      - scripts/normalize-backend-3.2.0.py
+      - .github/workflows/materialize-backend-3.2.0.yml
 
 permissions:
   contents: write
@@ -105,6 +114,7 @@ jobs:
           NODE
 
       - name: Commit materialized files
+        if: github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
