@@ -236,8 +236,9 @@ begin
   if (v_result ->> 'dry_run')::boolean is distinct from false then
     raise exception 'execution returned dry_run true';
   end if;
-  if (v_result ->> 'state_version')::integer <> 35 then
-    raise exception 'expected resulting state version 35, received %', v_result ->> 'state_version';
+  if (v_result ->> 'state_version')::integer <>
+     (select (result ->> 'current_state_version')::integer + 1 from rollover_preview) then
+    raise exception 'expected one state-version increment, received %', v_result ->> 'state_version';
   end if;
   if jsonb_array_length(v_result -> 'affected_resource_versions') <> 4 then
     raise exception 'expected four affected resource versions';
@@ -296,7 +297,8 @@ begin
 
   if not exists (
     select 1 from public.archers_canon_events
-    where state_version = 35 and event_type = 'season_rollover'
+    where state_version = (v_result ->> 'state_version')::integer
+      and event_type = 'season_rollover'
   ) then
     raise exception 'season rollover canon event missing';
   end if;
@@ -304,7 +306,7 @@ begin
     select 1 from public.archers_operation_log
     where idempotency_key = 'rollover-v1-execute'
       and operation = 'rollover_season'
-      and state_version = 35
+      and state_version = (v_result ->> 'state_version')::integer
       and status = 'SUCCESS'
   ) then
     raise exception 'season rollover operation log missing';
@@ -327,7 +329,7 @@ begin
       'strict', true,
       'expected_resources', (select result -> 'expected_resources' from rollover_preview)
     ),
-    34,
+    (select (result ->> 'current_state_version')::integer from rollover_preview),
     'rollover-v1-execute',
     'Advance player and staff contracts into 2027',
     'SYSTEM',
