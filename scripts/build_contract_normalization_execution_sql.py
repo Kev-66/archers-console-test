@@ -110,7 +110,7 @@ begin
      or coalesce((v_rollover_preview #>> '{{contract_set,staff}}')::integer, -1) <> 16
      or coalesce((v_rollover_preview #>> '{{contract_set,legacy_records_requiring_normalization}}')::integer, -1) <> 0
      or coalesce((v_rollover_preview #>> '{{effects,expired_contracts}}')::integer, -1) <> 27
-     or coalesce((v_rollover_preview #>> '{{effects,final_year_contracts}}')::integer, -1) <> 20 then
+     or coalesce((v_rollover_preview #>> '{{effects,final_year_contracts}}')::integer, -1) <> 27 then
     raise exception 'Transactional rollover readiness check failed: %', v_rollover_preview;
   end if;
 
