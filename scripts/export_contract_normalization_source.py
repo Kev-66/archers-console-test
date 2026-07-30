@@ -39,7 +39,21 @@ capabilities = call("scope=capabilities")
 core = call("scope=core_state")
 state_fields = call(
     "scope=state_fields&" + urllib.parse.urlencode({
-        "fields": "timeline,timeline.season,timeline.in_universe_date,current_season,season,resources.cap"
+        "fields": ",".join([
+            "timeline",
+            "timeline.season",
+            "timeline.in_universe_date",
+            "current_season",
+            "season",
+            "franchise",
+            "culture",
+            "continuation",
+            "canon",
+            "roster",
+            "resources",
+            "medical",
+            "opponent",
+        ])
     })
 )
 
@@ -81,7 +95,7 @@ summary = {
 
 write("capabilities.json", capabilities)
 write("core-state.json", core)
-write("season-state-fields.json", state_fields)
+write("organizational-state-fields.json", state_fields)
 write("active-resources.json", resources)
 write("active-player-resources.json", players)
 write("active-staff-resources.json", staff)
