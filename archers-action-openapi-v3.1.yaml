@@ -1,0 +1,228 @@
+openapi: 3.1.0
+info:
+  title: St. Louis Archers Franchise Operations
+  version: 3.1.0
+  description: >
+    Protected read and write access for the Draft a Dynasty franchise. Prefer
+    compact or filtered reads over the full snapshot once structured resources
+    exist.
+servers:
+  - url: https://oqbylwlkrabxvpdhugrf.supabase.co/functions/v1
+security:
+  - ArchersKey: []
+paths:
+  /archers-franchise:
+    get:
+      operationId: readArchersFranchise
+      summary: Read scoped Archers franchise data
+      description: >
+        Read only the smallest scope needed. Use core_state for current week,
+        continuation, opponent, open decisions, medical flags and roster-operation
+        summaries. Use state_fields for exact selected state paths. Use resources
+        with filters and pagination for resource bodies. Avoid snapshot unless a
+        complete legacy response is specifically required.
+      x-openai-isConsequential: false
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - snapshot
+              - core_state
+              - state_fields
+              - league
+              - game
+              - resources
+              - resource_index
+              - events
+              - audit
+              - capabilities
+            default: core_state
+        - name: fields
+          in: query
+          required: false
+          description: >
+            Comma-separated state paths for state_fields, maximum 20. Examples:
+            timeline,open_decisions,opponent,medical,roster.week_three_protections_status.
+          schema:
+            type: string
+        - name: resource_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: resource_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: include_archived
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: visibility
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: include_data
+          in: query
+          required: false
+          description: Set false for metadata-only resource reads.
+          schema:
+            type: boolean
+            default: true
+        - name: include_items
+          in: query
+          required: false
+          description: Set false for counts-only resource_index responses.
+          schema:
+            type: boolean
+            default: true
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: season
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 2026
+        - name: week
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: game_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: event_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: after_event_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: operation
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: after_operation_id
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Scoped franchise response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          description: Invalid scope or parameter
+        "401":
+          description: Unauthorized
+    post:
+      operationId: executeArchersOperation
+      summary: Execute or dry-run a protected franchise operation
+      description: >
+        Perform one supported operation. payload must be a native JSON object.
+        Never stringify payload and never use payload_json in new calls.
+      x-openai-isConsequential: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - operation
+                - summary
+                - source_label
+                - idempotency_key
+                - dry_run
+                - payload
+              properties:
+                operation:
+                  type: string
+                resource_type:
+                  type: [string, "null"]
+                resource_id:
+                  type: [string, "null"]
+                expected_version:
+                  type: [integer, "null"]
+                  minimum: 0
+                expected_state_version:
+                  type: [integer, "null"]
+                  minimum: 0
+                idempotency_key:
+                  type: string
+                  minLength: 1
+                summary:
+                  type: string
+                  minLength: 1
+                source_label:
+                  type: string
+                  enum:
+                    - USER_EXPLICIT
+                    - LIVE_SESSION_LOG
+                    - CHECKPOINT
+                    - CORRECTION
+                    - SYSTEM
+                exact_kevin_text:
+                  type: [string, "null"]
+                dry_run:
+                  type: boolean
+                payload:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Dry-run or operation result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "409":
+          description: Version, state or operation conflict
+components:
+  securitySchemes:
+    ArchersKey:
+      type: apiKey
+      in: header
+      name: x-archers-key
