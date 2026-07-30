@@ -1,0 +1,121 @@
+name: Materialize backend 3.2.0
+
+on:
+  push:
+    branches:
+      - agent/backend-3.2.0-atomic-decision-update
+    paths:
+      - phase3-2-atomic-decision-update.sql
+      - BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md
+      - scripts/materialize-backend-3.2.0.py
+      - scripts/normalize-backend-3.2.0.py
+      - .github/workflows/materialize-backend-3.2.0.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/backend-3.2.0-atomic-decision-update
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Normalize design and SQL
+        run: python scripts/normalize-backend-3.2.0.py
+
+      - name: Materialize Edge Function source
+        run: python scripts/materialize-backend-3.2.0.py
+
+      - name: Validate Python scripts
+        run: python -m py_compile scripts/materialize-backend-3.2.0.py scripts/normalize-backend-3.2.0.py
+
+      - name: Validate SQL and generated files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          sql = Path("phase3-2-atomic-decision-update.sql").read_text(encoding="utf-8")
+          source = Path("archers-franchise-index-v3.2.0.ts").read_text(encoding="utf-8")
+          canonical = Path("edge-function-archers-franchise.ts").read_text(encoding="utf-8")
+          design = Path("BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md").read_text(encoding="utf-8")
+
+          required_sql = [
+              "create or replace function public.archers_update_decision",
+              "payload.changes must be a non-empty JSON object",
+              "Decision Queue contains duplicate decision_id values",
+              "reopening a terminal decision requires source_label CORRECTION",
+              "unrelated_decisions_preserved",
+              "summary_counts",
+              "grant execute on function public.archers_update_decision",
+          ]
+          for token in required_sql:
+              assert token in sql, token
+
+          for forbidden in ["'PENDING'", "'CLOSED'", "'CANCELLED'"]:
+              assert forbidden not in sql, forbidden
+
+          required_source = [
+              'const BACKEND_VERSION = "3.2.0";',
+              '"update_decision",',
+              '"ATOMIC_DECISION_UPDATE"',
+              '"DECISION_IDENTITY_PRESERVATION"',
+              '"archers_update_decision"',
+          ]
+          for token in required_source:
+              assert token in source, token
+
+          assert source == canonical
+          assert "READY_FOR_REVIEW" in design
+          assert "WITHDRAWN" in design
+          assert "CANCELLED" not in design
+          print("static validation passed")
+          PY
+
+      - name: Parse TypeScript
+        run: |
+          npm install --no-save typescript@5.9.2
+          node - <<'NODE'
+          const fs = require("fs");
+          const ts = require("typescript");
+          const source = fs.readFileSync("archers-franchise-index-v3.2.0.ts", "utf8");
+          const result = ts.transpileModule(source, {
+            compilerOptions: {
+              target: ts.ScriptTarget.ES2022,
+              module: ts.ModuleKind.ESNext,
+            },
+            reportDiagnostics: true,
+          });
+          const diagnostics = result.diagnostics || [];
+          if (diagnostics.length) {
+            for (const diagnostic of diagnostics) {
+              console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
+            }
+            process.exit(1);
+          }
+          console.log("TypeScript parser diagnostics: 0");
+          NODE
+
+      - name: Commit materialized files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md \
+            phase3-2-atomic-decision-update.sql \
+            archers-franchise-index-v3.2.0.ts \
+            edge-function-archers-franchise.ts
+          if git diff --cached --quiet; then
+            echo "No materialized changes to commit."
+          else
+            git commit -m "Materialize backend 3.2.0 atomic decision update"
+            git push origin HEAD:agent/backend-3.2.0-atomic-decision-update
+          fi
