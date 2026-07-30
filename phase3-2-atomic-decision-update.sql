@@ -33,6 +33,7 @@ declare
   v_allowed_fields text[] := array[
     'status',
     'priority',
+    'summary',
     'due_date',
     'due_week',
     'deadline_label',
@@ -49,9 +50,10 @@ declare
     'approval_owner'
   ];
   v_supported_statuses text[] := array[
-    'OPEN', 'PENDING', 'DEFERRED', 'RESOLVED', 'CLOSED', 'CANCELLED'
+    'OPEN', 'READY_FOR_REVIEW', 'AWAITING_KEVIN', 'BLOCKED',
+    'DEFERRED', 'RESOLVED', 'WITHDRAWN', 'EXPIRED'
   ];
-  v_terminal_statuses text[] := array['RESOLVED', 'CLOSED', 'CANCELLED'];
+  v_terminal_statuses text[] := array['RESOLVED', 'WITHDRAWN', 'EXPIRED'];
   v_invalid_fields text;
   v_updated_fields jsonb;
   v_state_row public.archers_franchise_state%rowtype;
@@ -62,6 +64,7 @@ declare
   v_queue_array jsonb;
   v_new_queue_array jsonb;
   v_new_queue_data jsonb;
+  v_summary_counts jsonb;
   v_current_decision jsonb;
   v_updated_decision jsonb;
   v_existing_history jsonb;
@@ -87,7 +90,7 @@ begin
     raise exception 'update_decision requires decision_queue/decision-queue';
   end if;
 
-  if jsonb_typeof(v_payload) <> 'object' then
+  if jsonb_typeof(v_payload) is distinct from 'object' then
     raise exception 'payload must be one JSON object';
   end if;
 
@@ -111,7 +114,7 @@ begin
     raise exception 'summary is required';
   end if;
 
-  if p_source_label not in (
+  if coalesce(p_source_label, '') not in (
     'USER_EXPLICIT', 'LIVE_SESSION_LOG', 'CHECKPOINT', 'CORRECTION', 'SYSTEM'
   ) then
     raise exception 'unsupported source_label: %', p_source_label;
@@ -123,7 +126,7 @@ begin
   end if;
 
   v_changes := v_payload -> 'changes';
-  if jsonb_typeof(v_changes) <> 'object' or v_changes = '{}'::jsonb then
+  if jsonb_typeof(v_changes) is distinct from 'object' or v_changes = '{}'::jsonb then
     raise exception 'payload.changes must be a non-empty JSON object';
   end if;
 
@@ -153,38 +156,26 @@ begin
   if found then
     v_idempotency_key_already_used := true;
 
-    if not p_dry_run then
-      if v_existing_log.status = 'SUCCESS'
-         and v_existing_log.operation = v_operation
-         and v_existing_log.resource_type = 'decision_queue'
-         and v_existing_log.resource_id = 'decision-queue'
-         and v_existing_log.expected_version = p_expected_version
-         and v_existing_log.request_payload = v_request_payload
-         and v_existing_log.summary = trim(p_summary)
-         and v_existing_log.source_label = p_source_label
-         and v_existing_log.exact_kevin_text is not distinct from nullif(p_exact_kevin_text, '') then
-        return v_existing_log.result_payload || jsonb_build_object('idempotent_replay', true);
-      end if;
-
+    if not (
+      v_existing_log.status = 'SUCCESS'
+      and v_existing_log.operation = v_operation
+      and v_existing_log.resource_type = 'decision_queue'
+      and v_existing_log.resource_id = 'decision-queue'
+      and v_existing_log.expected_version = p_expected_version
+      and v_existing_log.request_payload = v_request_payload
+      and v_existing_log.summary = trim(p_summary)
+      and v_existing_log.source_label = p_source_label
+      and v_existing_log.exact_kevin_text is not distinct from nullif(p_exact_kevin_text, '')
+    ) then
       raise exception 'idempotency_key was already used for a different request';
+    end if;
+
+    if not p_dry_run then
+      return v_existing_log.result_payload || jsonb_build_object('idempotent_replay', true);
     end if;
   end if;
 
-  select *
-  into v_state_row
-  from public.archers_franchise_state
-  where id = 'stl-2026'
-  for update;
-
-  if not found then
-    raise exception 'Archers franchise state has not been initialized';
-  end if;
-
-  if v_state_row.version <> p_expected_state_version then
-    raise exception 'stale franchise state: expected %, current %',
-      p_expected_state_version, v_state_row.version;
-  end if;
-
+  -- Match the established generic resource lock order: resource first, state second.
   select *
   into v_queue_row
   from public.archers_resources
@@ -201,6 +192,21 @@ begin
   if v_queue_row.version <> p_expected_version then
     raise exception 'stale Decision Queue: expected %, current %',
       p_expected_version, v_queue_row.version;
+  end if;
+
+  select *
+  into v_state_row
+  from public.archers_franchise_state
+  where id = 'stl-2026'
+  for update;
+
+  if not found then
+    raise exception 'Archers franchise state has not been initialized';
+  end if;
+
+  if v_state_row.version <> p_expected_state_version then
+    raise exception 'stale franchise state: expected %, current %',
+      p_expected_state_version, v_state_row.version;
   end if;
 
   if jsonb_typeof(v_queue_row.data -> 'decisions') = 'array' then
@@ -242,10 +248,16 @@ begin
     raise exception 'Decision Queue contains duplicate decision_id values';
   end if;
 
-  select count(*), max(value)
-  into v_match_count, v_current_decision
+  select count(*)
+  into v_match_count
   from jsonb_array_elements(v_queue_array) as entries(value)
   where value ->> 'decision_id' = v_decision_id;
+
+  select value
+  into v_current_decision
+  from jsonb_array_elements(v_queue_array) as entries(value)
+  where value ->> 'decision_id' = v_decision_id
+  limit 1;
 
   if v_match_count = 0 then
     raise exception 'decision_id not found: %', v_decision_id;
@@ -285,7 +297,7 @@ begin
   v_updated_decision := v_current_decision || v_changes;
 
   if v_result_status = any(v_terminal_statuses)
-     and jsonb_typeof(v_updated_decision -> 'resolution') <> 'object' then
+     and jsonb_typeof(v_updated_decision -> 'resolution') is distinct from 'object' then
     raise exception 'terminal decision status requires a resolution object';
   end if;
 
@@ -294,7 +306,7 @@ begin
   if v_payload ? 'history_entry' and v_payload -> 'history_entry' <> 'null'::jsonb then
     v_history_entry := v_payload -> 'history_entry';
 
-    if jsonb_typeof(v_history_entry) <> 'object' then
+    if jsonb_typeof(v_history_entry) is distinct from 'object' then
       raise exception 'payload.history_entry must be a JSON object or null';
     end if;
 
@@ -313,7 +325,7 @@ begin
     end if;
 
     v_existing_history := coalesce(v_updated_decision -> 'history', '[]'::jsonb);
-    if jsonb_typeof(v_existing_history) <> 'array' then
+    if jsonb_typeof(v_existing_history) is distinct from 'array' then
       raise exception 'existing decision history must be an array';
     end if;
 
@@ -345,6 +357,46 @@ begin
     array[v_array_key],
     v_new_queue_array,
     false
+  );
+
+  select jsonb_build_object(
+    'total', count(*),
+    'open', count(*) filter (
+      where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) in (
+        'OPEN', 'READY_FOR_REVIEW', 'AWAITING_KEVIN', 'BLOCKED', 'DEFERRED'
+      )
+    ),
+    'actionable', count(*) filter (
+      where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) in (
+        'OPEN', 'READY_FOR_REVIEW', 'AWAITING_KEVIN', 'BLOCKED'
+      )
+    ),
+    'deferred', count(*) filter (
+      where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) = 'DEFERRED'
+    ),
+    'closed', count(*) filter (
+      where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) in (
+        'RESOLVED', 'WITHDRAWN', 'EXPIRED'
+      )
+    ),
+    'resolved', count(*) filter (
+      where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) = 'RESOLVED'
+    ),
+    'withdrawn', count(*) filter (
+      where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) = 'WITHDRAWN'
+    ),
+    'expired', count(*) filter (
+      where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) = 'EXPIRED'
+    )
+  )
+  into v_summary_counts
+  from jsonb_array_elements(v_new_queue_array) as entries(value);
+
+  v_new_queue_data := jsonb_set(
+    v_new_queue_data,
+    '{summary_counts}',
+    coalesce(v_queue_row.data -> 'summary_counts', '{}'::jsonb) || v_summary_counts,
+    true
   );
 
   if p_dry_run then
