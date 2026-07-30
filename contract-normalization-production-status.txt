@@ -1,0 +1,15 @@
+run_id=30591518488
+job_status=failure
+source_commit=fa99fad5d6c6f9adc94da37cdc48bce97b752aa2
+normalization_summary=verification_unavailable
+plan_summary=
+{
+  "active_roster_and_practice_squad_2026_cap_millions": 249.0075,
+  "expiring_after_2026": 27,
+  "player_updates": 69,
+  "season": 2026,
+  "staff_2026_payroll_millions": 28.8,
+  "staff_inserts": 16,
+  "state_version": 36,
+  "unresolved_fifth_year_options": 2
+}
