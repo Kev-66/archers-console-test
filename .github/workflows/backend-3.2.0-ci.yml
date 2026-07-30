@@ -1,0 +1,135 @@
+name: Backend 3.2.0 CI
+
+on:
+  push:
+    branches:
+      - agent/backend-3.2.0-atomic-decision-update
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: postgres
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Bootstrap isolated database
+        run: psql -f tests/backend-3.2.0/bootstrap.sql
+
+      - name: Apply atomic decision migration
+        run: psql -f phase3-2-atomic-decision-update.sql
+
+      - name: Run atomic decision regressions
+        run: psql -f tests/backend-3.2.0/atomic-decision-update.sql
+
+      - name: Verify generated Edge sources
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+
+          versioned = Path("archers-franchise-index-v3.2.0.ts").read_bytes()
+          canonical = Path("edge-function-archers-franchise.ts").read_bytes()
+
+          assert versioned == canonical, "versioned and canonical Edge sources differ"
+
+          text = versioned.decode("utf-8")
+          required = [
+              'const BACKEND_VERSION = "3.2.0";',
+              '"update_decision",',
+              '"ATOMIC_DECISION_UPDATE"',
+              '"DECISION_IDENTITY_PRESERVATION"',
+              '"archers_update_decision"',
+              'expected_state_version is required for update_decision',
+          ]
+          for token in required:
+              assert token in text, token
+
+          print("edge_source_sha256=" + hashlib.sha256(versioned).hexdigest())
+          print("edge_source_bytes=" + str(len(versioned)))
+          PY
+
+      - name: Parse TypeScript
+        run: |
+          npm install --no-save typescript@5.9.2
+          node - <<'NODE'
+          const fs = require("fs");
+          const ts = require("typescript");
+          const source = fs.readFileSync("archers-franchise-index-v3.2.0.ts", "utf8");
+          const result = ts.transpileModule(source, {
+            compilerOptions: {
+              target: ts.ScriptTarget.ES2022,
+              module: ts.ModuleKind.ESNext,
+            },
+            reportDiagnostics: true,
+          });
+          const diagnostics = result.diagnostics || [];
+          if (diagnostics.length) {
+            for (const diagnostic of diagnostics) {
+              console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
+            }
+            process.exit(1);
+          }
+          console.log("TypeScript parser diagnostics: 0");
+          NODE
+
+      - name: Verify documentation alignment
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          design = Path("BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md").read_text(encoding="utf-8")
+          sql = Path("phase3-2-atomic-decision-update.sql").read_text(encoding="utf-8")
+
+          for status in [
+              "OPEN",
+              "READY_FOR_REVIEW",
+              "AWAITING_KEVIN",
+              "BLOCKED",
+              "DEFERRED",
+              "RESOLVED",
+              "WITHDRAWN",
+              "EXPIRED",
+          ]:
+              assert status in design
+              assert f"'{status}'" in sql
+
+          for forbidden in ["PENDING", "CLOSED", "CANCELLED"]:
+              assert f"`{forbidden}`" not in design
+              assert f"'{forbidden}'" not in sql
+
+          assert "legacy_open_decisions_synchronized" in design
+          assert "v_open_decisions" in sql
+          print("documentation alignment passed")
+          PY
