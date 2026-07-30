@@ -2,199 +2,104 @@
 
 ## Status
 
-Backend 3.2.0 is implemented on draft PR #5 and has passed isolated PostgreSQL 16 regressions plus TypeScript parser validation.
+Production deployment and live validation completed on July 30, 2026.
 
-It is **not live** until both deployment stages below are completed and verified.
+- SQL migration deployed to the Archers Supabase project.
+- `archers-franchise` Edge Function deployed at backend version `3.2.0`.
+- Capabilities verification passed.
+- Atomic dry-run validation passed.
+- Controlled live atomic write passed.
+- `operation_verification` confirmed operation `29` at state version `35` and Decision Queue version `5`.
 
-## Files
+## Deployed files
 
 - SQL migration: `phase3-2-atomic-decision-update.sql`
 - Versioned Edge source: `archers-franchise-index-v3.2.0.ts`
 - Canonical Edge source: `edge-function-archers-franchise.ts`
 - Design: `BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md`
+- Live evidence: `BACKEND_3.2.0_LIVE_VALIDATION_REPORT.md`
 
 The two Edge source files must remain identical.
 
-## Stage 1: Apply the SQL migration
+## Verified capabilities
 
-In the Supabase SQL Editor for the Archers project:
+The production Action reported:
 
-1. Open `phase3-2-atomic-decision-update.sql` from PR #5.
-2. Copy the complete file exactly.
-3. Run it once.
-4. Confirm the transaction completes without an error.
+- `backend_version`: `3.2.0`
+- `update_decision` in `write_operations`
+- `ATOMIC_DECISION_UPDATE` in `write_features`
+- `DECISION_IDENTITY_PRESERVATION` in `safeguards`
 
-The migration creates or replaces only:
+## Verified dry run
 
-```text
-public.archers_update_decision(
-  text,
-  text,
-  jsonb,
-  integer,
-  integer,
-  text,
-  text,
-  text,
-  text,
-  boolean
-)
-```
+The deferred `teo-poaching` decision was used as a non-writing target.
 
-It does not replace `archers_execute_operation`, change a table, or modify live franchise records.
+- current state version: `34`
+- current Decision Queue version: `4`
+- proposed state version: `35`
+- proposed Decision Queue version: `5`
+- updated fields: `note`
+- unrelated decisions preserved: `true`
+- idempotency key already used: `false`
+- database write performed: no
 
-Do not deploy the Edge Function if the SQL migration fails.
+## Verified controlled live write
 
-## Stage 2: Deploy the Edge Function
+A controlled no-op lifecycle write set `teo-poaching` to its already-current `DEFERRED` status without changing its substantive meaning, recommendation, evidence, deadline, or resolution.
 
-After the SQL migration succeeds:
+The complete three-call path succeeded:
 
-1. Open the deployed `archers-franchise` Edge Function.
-2. Replace its source with the complete contents of `archers-franchise-index-v3.2.0.ts` from PR #5.
-3. Deploy the function.
-4. Do not change environment variables or Action authentication.
-5. Do not reinstall or modify the Custom GPT OpenAPI schema.
+1. `decision_context`
+2. `executeArchersOperation` with `operation: update_decision`
+3. `operation_verification`
 
-## Stage 3: Capabilities verification
+Verified results:
 
-Send this in the Draft a Dynasty GPT:
+- global state: `34 → 35`
+- Decision Queue: `4 → 5`
+- operation ID: `29`
+- verification: `true`
+- unrelated decisions preserved: `true`
+- idempotent replay: `false`
 
-```text
-TECHNICAL BACKEND 3.2.0 CAPABILITIES CHECK
+## Remaining activation step
 
-Do not write or modify anything.
+Install `DRAFT_A_DYNASTY_COMPACT_INSTRUCTIONS_v3.4.md` in the Draft a Dynasty Custom GPT. It adds `update_decision` to the allowed operation list and directs single-decision lifecycle mutations through the atomic Decision Queue operation.
 
-Call capabilities exactly once.
+The v3.4 file is 7,968 characters and remains within the Custom GPT instruction limit.
 
-Report the complete capabilities response, including:
-- backend_version
-- read_scopes
-- composite_read_features
-- write_features
-- write_operations
-- safeguards
+## Normal decision workflow
 
-Stop after this single read-only Action call.
-```
+For one Decision Queue lifecycle mutation:
 
-Pass conditions:
+1. Call `decision_context` with the exact `decision_id`.
+2. Use the returned global state and Decision Queue versions.
+3. Call `executeArchersOperation` with:
+   - `operation: update_decision`
+   - `resource_type: decision_queue`
+   - `resource_id: decision-queue`
+   - a native JSON payload containing `decision_id` and `changes`
+4. Call `operation_verification` with the operation ID or idempotency key, exact `decision_id`, and queue resource identifiers.
+5. Do not claim success until verification passes.
 
-- `backend_version` is `3.2.0`
-- `write_features` includes `ATOMIC_DECISION_UPDATE`
-- `write_operations` includes `update_decision`
-- `safeguards` includes `DECISION_IDENTITY_PRESERVATION`
+## OpenAPI
 
-## Stage 4: Read a safe dry-run target
-
-Use an existing deferred decision only as a read and dry-run target. The recommended target is `teo-poaching`.
-
-```text
-TECHNICAL BACKEND 3.2.0 ATOMIC DECISION DRY-RUN CONTEXT
-
-Do not write or modify anything.
-
-Call decision_context exactly once using:
-
-- decision_id: teo-poaching
-- audit_limit: 3
-- event_limit: 3
-- transaction_limit: 4
-
-Do not call any other scope.
-
-Report only:
-- backend_version
-- state_version
-- decision_queue_version
-- decision_id
-- decision_status
-- decision_actionable
-- write_preconditions
-
-Stop afterward.
-```
-
-Record the returned global state version and Decision Queue version. Do not reuse versions displayed elsewhere.
-
-## Stage 5: Atomic dry run
-
-Replace the two placeholders with the exact versions returned in Stage 4.
-
-```text
-TECHNICAL BACKEND 3.2.0 ATOMIC DECISION DRY RUN
-
-Perform a dry run only. Do not execute a real write.
-
-Call executeArchersOperation exactly once using:
-
-- operation: update_decision
-- resource_type: decision_queue
-- resource_id: decision-queue
-- expected_version: <CURRENT_DECISION_QUEUE_VERSION>
-- expected_state_version: <CURRENT_STATE_VERSION>
-- idempotency_key: atomic-decision-teo-priority-dry-run-v1-20260730
-- summary: Preview atomic Teo decision priority update
-- source_label: SYSTEM
-- dry_run: true
-- payload:
-  {
-    "decision_id": "teo-poaching",
-    "changes": {
-      "priority": "HIGH"
-    }
-  }
-
-Use a native JSON payload object. Do not use payload_json.
-Do not call any read scope or any other operation.
-Return the complete Action response exactly as received.
-Stop afterward.
-```
-
-Pass conditions:
-
-- `dry_run` is `true`
-- `operation` is `update_decision`
-- `decision_id` is `teo-poaching`
-- current versions match Stage 4
-- proposed versions are each current plus one
-- proposed decision priority is `HIGH`
-- `unrelated_decisions_preserved` is `true`
-- `legacy_open_decisions_synchronized` is `true`
-- the response states that no database write occurred
-
-After the dry run, reread only if needed to prove that versions did not change.
-
-## First live write
-
-Do not change `teo-poaching` merely to test infrastructure.
-
-Use the first real franchise decision that requires a Decision Queue mutation, or create a purpose-built non-story test decision through a separately approved maintenance workflow.
-
-For the first real atomic write:
-
-1. Call `decision_context` for the exact decision.
-2. Use its returned write preconditions.
-3. Call `executeArchersOperation` with `operation: update_decision`.
-4. Call `operation_verification` with the operation ID or idempotency key, exact `decision_id`, and Decision Queue resource identifiers.
-5. Confirm unrelated decisions and queue counts remain correct.
-
-Keep PR #5 in draft until this live write and verification pass.
-
-## GPT instruction update
-
-After live verification succeeds, add `update_decision` to the `ALLOWED OPERATIONS` line in Compact Instructions v3.3 and save the result as v3.4.
-
-No other instruction change is required.
+No structural OpenAPI update is required. The installed compact Action schema accepts `operation` as a string and already transports the required native JSON payload and version fields.
 
 ## Rollback
 
-If the SQL migration succeeds but the Edge deployment fails, leave the SQL helper installed and continue using backend 3.1.4. It is inert until the Edge Function routes `update_decision` to it.
+The existing `archers_execute_operation` RPC was not modified. To disable the new path without altering stored canon:
 
-If backend 3.2.0 is deployed but fails verification:
+1. Redeploy the verified backend 3.1.4 Edge Function source.
+2. Remove `update_decision` from the Custom GPT instructions.
+3. Optionally revoke execute access to `public.archers_update_decision` from `service_role`.
 
-1. Redeploy the verified 3.1.4 Edge source.
-2. Do not perform an `update_decision` write.
-3. Preserve the failed response and logs for diagnosis.
-4. The SQL helper may remain installed or be removed later with an explicit maintenance migration.
+Do not delete or rewrite verified operation `29`. It is a valid SYSTEM validation event and audit record.
 
-Do not merge PR #5 based only on deployment. Merge only after live verification evidence is recorded.
+## Merge gate
+
+PR #5 may be merged after:
+
+- the latest CI run passes,
+- Compact Instructions v3.4 are installed in the Draft a Dynasty GPT,
+- the PR remains mergeable with no unresolved review blockers.
