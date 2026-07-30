@@ -1,0 +1,168 @@
+name: Contract Normalization v1 Production
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archers-contract-normalization-production
+  cancel-in-progress: false
+
+jobs:
+  normalize:
+    if: ${{ github.event.head_commit.message == 'RUN CONTRACT NORMALIZATION V1 PRODUCTION' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PROJECT_REF: oqbylwlkrabxvpdhugrf
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      ARCHERS_ACTION_KEY: ${{ secrets.ARCHERS_ACTION_KEY }}
+    steps:
+      - name: Check out normalization source
+        uses: actions/checkout@v4
+
+      - name: Validate credentials and source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo 'SUPABASE_ACCESS_TOKEN is missing'; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo 'SUPABASE_DB_PASSWORD is missing'; exit 1; }
+          test -n "$ARCHERS_ACTION_KEY" || { echo 'ARCHERS_ACTION_KEY is missing'; exit 1; }
+          test -f scripts/export_contract_normalization_source.py
+          test -f scripts/build_contract_normalization_plan.py
+          test -f scripts/build_contract_normalization_execution_sql.py
+          test -f scripts/verify_contract_normalization_production.py
+          test -f phase3-3-contract-normalization-v1.sql
+          grep -q 'archers_normalize_contracts_v1' phase3-3-contract-normalization-v1.sql
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Export current authoritative source and build exact plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf evidence deploy-work
+          mkdir -p evidence deploy-work
+          python scripts/export_contract_normalization_source.py
+          python scripts/build_contract_normalization_plan.py
+          python scripts/build_contract_normalization_execution_sql.py
+
+      - name: Validate generated plan boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          plan = json.loads(Path('evidence/contract-normalization-plan-v1.json').read_text(encoding='utf-8'))
+          summary = json.loads(Path('evidence/contract-normalization-plan-summary.json').read_text(encoding='utf-8'))
+          assert plan['expected_state_version'] == 36, plan
+          assert plan['season'] == 2026, plan
+          assert len(plan['player_updates']) == 69, plan
+          assert len(plan['staff_inserts']) == 16, plan
+          assert summary['expiring_after_2026'] == 27, summary
+          assert summary['unresolved_fifth_year_options'] == 2, summary
+          assert plan['decision_rules']['automatic_options_exercised'] is False, plan
+          assert plan['decision_rules']['personnel_moves_made'] is False, plan
+          PY
+
+      - name: Prepare isolated migration workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase init --force
+          mkdir -p supabase/migrations
+          cp ../phase3-3-contract-normalization-v1.sql \
+            supabase/migrations/20260730234000_contract_normalization_v1_function.sql
+          cp ../evidence/contract-normalization-execution-v1.sql \
+            supabase/migrations/20260730234100_contract_normalization_v1_execute.sql
+
+      - name: Link production database
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Back up current schema and preserve pre-write records
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase db dump --linked --password "$SUPABASE_DB_PASSWORD" --schema public \
+            --file ../evidence/pre-normalization-public-schema.sql
+
+      - name: Preview normalization migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --dry-run --include-all \
+            | tee ../evidence/contract-normalization-db-push-dry-run.txt
+
+      - name: Apply atomic contract normalization
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --include-all --yes \
+            | tee ../evidence/contract-normalization-db-push-result.txt
+
+      - name: Verify production state and run rollover dry run only
+        shell: bash
+        env:
+          GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python scripts/verify_contract_normalization_production.py
+
+      - name: Preserve normalization evidence and backups
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-normalization-v1-production-${{ github.run_id }}
+          path: evidence
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish non-secret normalization status
+        if: always()
+        shell: bash
+        env:
+          NORMALIZATION_JOB_STATUS: ${{ job.status }}
+          NORMALIZATION_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "run_id=$NORMALIZATION_RUN_ID"
+            echo "job_status=$NORMALIZATION_JOB_STATUS"
+            echo "source_commit=$GITHUB_SHA"
+            if [ -f evidence/contract-normalization-production-summary.json ]; then
+              echo "normalization_summary="
+              cat evidence/contract-normalization-production-summary.json
+            elif [ -f evidence/contract-normalization-plan-summary.json ]; then
+              echo "normalization_summary=verification_unavailable"
+              echo "plan_summary="
+              cat evidence/contract-normalization-plan-summary.json
+            else
+              echo "normalization_summary=unavailable"
+            fi
+          } > contract-normalization-production-status.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B normalization-report origin/main
+          git add contract-normalization-production-status.txt
+          git commit -m "Record Contract Normalization v1 production status" || true
+          git push origin HEAD:main
