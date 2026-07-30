@@ -1,0 +1,129 @@
+.dq-priority-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: .7rem;
+}
+
+.dq-priority-line .pill {
+  padding: 3px 7px;
+}
+
+.dq-related-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--lineSoft);
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.dq-related-row > div,
+.dq-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.dq-player-chip,
+.dq-resource-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: rgba(11, 28, 23, .8);
+  color: var(--cream);
+  font: inherit;
+  font-size: .72rem;
+}
+
+button.dq-player-chip {
+  cursor: pointer;
+}
+
+button.dq-player-chip:hover,
+button.dq-player-chip:focus-visible {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.dq-history-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: .75rem;
+  font-style: italic;
+}
+
+.dq-dialog-meta {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.dq-choice-option > span {
+  display: grid;
+  gap: 4px;
+}
+
+.dq-choice-option small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.dq-choice-option ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.dq-choice-option.is-blocked {
+  opacity: .58;
+}
+
+.dq-recommendation {
+  margin-top: 12px;
+  border-left: 3px solid var(--gold);
+  padding: 10px 12px;
+  background: rgba(224, 187, 98, .055);
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.dq-recommendation strong {
+  color: var(--cream);
+}
+
+.dq-boundaries {
+  margin-top: 12px;
+  border: 1px solid var(--lineSoft);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.dq-boundaries summary {
+  cursor: pointer;
+  color: var(--cream);
+  font-weight: 850;
+}
+
+.dq-boundaries ul {
+  margin: 9px 0 0;
+  padding-left: 18px;
+}
+
+.dq-frontoffice-item .item-note:first-of-type {
+  margin-top: 3px;
+}
+
+@media (max-width: 650px) {
+  .dq-priority-line {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
