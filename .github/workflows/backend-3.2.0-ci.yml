@@ -104,16 +104,27 @@ jobs:
           console.log("TypeScript parser diagnostics: 0");
           NODE
 
-      - name: Verify documentation alignment
+      - name: Verify documentation and knowledge architecture
         run: |
           python - <<'PY'
           from pathlib import Path
 
           design = Path("BACKEND_3.2.0_ATOMIC_DECISION_UPDATE_DESIGN.md").read_text(encoding="utf-8")
           sql = Path("phase3-2-atomic-decision-update.sql").read_text(encoding="utf-8")
-          instructions = Path("DRAFT_A_DYNASTY_COMPACT_INSTRUCTIONS_v3.4.md").read_text(encoding="utf-8")
+          v34 = Path("DRAFT_A_DYNASTY_COMPACT_INSTRUCTIONS_v3.4.md").read_text(encoding="utf-8")
+          kernel = Path("DRAFT_A_DYNASTY_COMPACT_INSTRUCTIONS_v4.0.md").read_text(encoding="utf-8")
 
-          for status in [
+          module_names = [
+              "DAD_CORE_OPERATIONS_MANUAL.md",
+              "DAD_DECISION_QUEUE_PROTOCOL.md",
+              "DAD_GAME_DAY_PROTOCOL.md",
+              "DAD_LEAGUE_AND_RESOURCE_RULES.md",
+              "DAD_SESSION_CLOSEOUT_PROTOCOL.md",
+              "DAD_CHARACTER_VOICE_GUIDE.md",
+          ]
+          modules = {name: Path(name).read_text(encoding="utf-8") for name in module_names}
+
+          statuses = [
               "OPEN",
               "READY_FOR_REVIEW",
               "AWAITING_KEVIN",
@@ -122,19 +133,69 @@ jobs:
               "RESOLVED",
               "WITHDRAWN",
               "EXPIRED",
-          ]:
+          ]
+          for status in statuses:
               assert status in design
               assert f"'{status}'" in sql
+              assert f"`{status}`" in modules["DAD_DECISION_QUEUE_PROTOCOL.md"]
 
           for forbidden in ["PENDING", "CLOSED", "CANCELLED"]:
               assert f"`{forbidden}`" not in design
               assert f"'{forbidden}'" not in sql
+              assert f"`{forbidden}`" not in modules["DAD_DECISION_QUEUE_PROTOCOL.md"]
 
           assert "legacy_open_decisions_synchronized" in design
           assert "v_open_decisions" in sql
-          assert instructions.startswith("DRAFT A DYNASTY • UNIFIED OPERATIONS • COMPACT INSTRUCTIONS v3.4")
-          assert "patch_franchise_state, update_decision, upsert_resource" in instructions
-          assert "target decision_queue/decision-queue and never resend the full queue" in instructions
-          assert len(instructions) <= 8000, len(instructions)
-          print(f"documentation alignment passed; instructions_characters={len(instructions)}")
+
+          assert v34.startswith("DRAFT A DYNASTY • UNIFIED OPERATIONS • COMPACT INSTRUCTIONS v3.4")
+          assert len(v34) <= 8000, len(v34)
+
+          assert kernel.startswith("DRAFT A DYNASTY • OPERATING KERNEL • COMPACT INSTRUCTIONS v4.0")
+          assert 4000 <= len(kernel) <= 8000, len(kernel)
+          assert "Use only operations and source labels returned by current capabilities" in kernel
+          assert "patch_franchise_state, update_decision, upsert_resource" not in kernel
+          assert "Kevin Dorey is user-controlled only" in kernel
+          assert "target decision_queue/decision-queue and never resend the full queue" in kernel
+
+          for name in module_names:
+              assert name in kernel, f"kernel does not route to {name}"
+              assert len(modules[name]) < 20000, (name, len(modules[name]))
+
+          decision = modules["DAD_DECISION_QUEUE_PROTOCOL.md"]
+          assert "Do not mark a decision resolved before its required external effects are verified" in decision
+          assert "resource_type: decision_queue" in decision
+          assert "resource_id: decision-queue" in decision
+
+          core = modules["DAD_CORE_OPERATIONS_MANUAL.md"]
+          assert "A write is not complete when executeArchersOperation merely returns" in core
+          assert "Technical failure may delay synchronization" in core
+
+          game = modules["DAD_GAME_DAY_PROTOCOL.md"]
+          assert "Never steer toward an Archers win or loss" in game
+          assert "Official score, clock, possession" in game
+
+          league = modules["DAD_LEAGUE_AND_RESOURCE_RULES.md"]
+          assert "Standings derive from official FINAL game records" in league
+          assert "Archive rather than hard-delete" in league
+
+          closeout = modules["DAD_SESSION_CLOSEOUT_PROTOCOL.md"]
+          assert "Record the next playable moment" in closeout
+          assert "Closeout is incomplete until verification" in closeout
+
+          voice = modules["DAD_CHARACTER_VOICE_GUIDE.md"]
+          assert "AUTHORITATIVE FINAL" in voice
+          for person in [
+              "Mara Voss",
+              "Avery Holt",
+              "Petra Lang",
+              "Wade Sutter",
+              "Darius Bell",
+              "Elliot Crane",
+              "Dr. Anjali Venkataraman",
+              "Celeste Navarro",
+          ]:
+              assert person in voice
+
+          sizes = {"kernel": len(kernel), **{name: len(text) for name, text in modules.items()}}
+          print("knowledge architecture passed; sizes=" + repr(sizes))
           PY
