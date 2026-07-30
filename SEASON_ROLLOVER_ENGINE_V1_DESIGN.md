@@ -178,3 +178,10 @@ Backend 3.3.0 operation verification reads `affected_resource_versions` from the
 ## No automatic options
 
 Options are reported as due or unresolved. The rollover engine never exercises or declines an option.
+
+
+## Scale-safe verification
+
+The execution fingerprint must contain each contract resource identity exactly once. Duplicate identities are rejected, preventing one valid resource from being repeated while another is omitted.
+
+Operation verification reloads every logged affected resource in bounded database batches. It verifies the full set, while returning at most 250 resource summaries plus total, returned, and truncation metadata so Action responses remain bounded as the league grows.

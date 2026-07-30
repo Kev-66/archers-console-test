@@ -209,6 +209,61 @@ begin
 end;
 $$;
 
+-- A fingerprint cannot duplicate one valid resource while omitting another.
+do $$
+declare
+  v_expected jsonb := (select result -> 'expected_resources' from rollover_preview);
+  v_duplicate jsonb;
+  v_failed boolean := false;
+  v_state_before integer := (select version from public.archers_franchise_state where id = 'stl-2026');
+begin
+  if jsonb_array_length(v_expected) < 2 then
+    raise exception 'duplicate fingerprint regression requires at least two contracts';
+  end if;
+
+  v_duplicate :=
+    (v_expected - (jsonb_array_length(v_expected) - 1)) ||
+    jsonb_build_array(v_expected -> 0);
+
+  begin
+    perform public.archers_rollover_season(
+      'season_rollover',
+      'season-rollover',
+      jsonb_build_object(
+        'from_season', 2026,
+        'to_season', 2027,
+        'strict', true,
+        'expected_resources', v_duplicate
+      ),
+      (select (result ->> 'current_state_version')::integer from rollover_preview),
+      'rollover-v1-duplicate-fingerprint',
+      'Reject duplicate rollover fingerprint',
+      'SYSTEM',
+      null,
+      false
+    );
+  exception when others then
+    if position('duplicate resource identities' in sqlerrm) = 0 then
+      raise;
+    end if;
+    v_failed := true;
+  end;
+
+  if not v_failed then
+    raise exception 'duplicate fingerprint unexpectedly succeeded';
+  end if;
+  if (select version from public.archers_franchise_state where id = 'stl-2026') <> v_state_before then
+    raise exception 'duplicate fingerprint changed state';
+  end if;
+  if exists (
+    select 1 from public.archers_operation_log
+    where idempotency_key = 'rollover-v1-duplicate-fingerprint'
+  ) then
+    raise exception 'duplicate fingerprint wrote an operation log';
+  end if;
+end;
+$$;
+
 create temporary table rollover_execution as
 select public.archers_rollover_season(
   'season_rollover',

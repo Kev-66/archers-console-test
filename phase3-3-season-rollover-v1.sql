@@ -31,7 +31,9 @@ declare
   v_to_season integer;
   v_strict boolean := true;
   v_expected_resources jsonb;
+  v_expected_resources_supplied boolean := false;
   v_expected_count integer := 0;
+  v_expected_unique_count integer := 0;
   v_state_row public.archers_franchise_state%rowtype;
   v_existing_log public.archers_operation_log%rowtype;
   v_request_payload jsonb;
@@ -158,6 +160,7 @@ begin
     end;
   end if;
 
+  v_expected_resources_supplied := v_payload ? 'expected_resources';
   v_expected_resources := coalesce(v_payload -> 'expected_resources', '[]'::jsonb);
   if jsonb_typeof(v_expected_resources) is distinct from 'array' then
     raise exception 'payload.expected_resources must be an array';
@@ -581,7 +584,7 @@ begin
   -- Execute calls must reproduce the exact contract version set returned by
   -- the dry run. This detects additions, removals, and concurrent edits.
   if not p_dry_run then
-    if v_expected_count = 0 and v_processable_count > 0 then
+    if not v_expected_resources_supplied then
       raise exception 'payload.expected_resources from a current dry run is required';
     end if;
 
@@ -595,11 +598,21 @@ begin
       if jsonb_typeof(v_expected_entry) is distinct from 'object' then
         raise exception 'every expected_resources entry must be an object';
       end if;
+
+      if nullif(trim(v_expected_entry ->> 'resource_type'), '') is null
+         or nullif(trim(v_expected_entry ->> 'resource_id'), '') is null then
+        raise exception 'every expected_resources entry requires resource_type and resource_id';
+      end if;
+
       begin
         v_expected_version := (v_expected_entry ->> 'version')::integer;
       exception when others then
         raise exception 'expected_resources.version must be an integer';
       end;
+
+      if v_expected_version < 1 then
+        raise exception 'expected_resources.version must be positive';
+      end if;
 
       select count(*)
       into v_matching_expected
@@ -615,6 +628,19 @@ begin
           v_expected_version;
       end if;
     end loop;
+
+    select count(*)
+    into v_expected_unique_count
+    from (
+      select distinct
+        value ->> 'resource_type' as resource_type,
+        value ->> 'resource_id' as resource_id
+      from jsonb_array_elements(v_expected_resources) as expected(value)
+    ) as unique_expected;
+
+    if v_expected_unique_count <> v_expected_count then
+      raise exception 'payload.expected_resources contains duplicate resource identities';
+    end if;
   end if;
 
   v_readiness := v_blocker_count = 0;

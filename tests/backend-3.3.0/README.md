@@ -14,6 +14,7 @@ Coverage includes:
 - unresolved option reporting without option exercise;
 - exact idempotent replay;
 - stale contract-resource fingerprint rejection;
+- duplicate contract-resource identity rejection;
 - atomic rollback on failure;
 - wrong-season rejection.
 

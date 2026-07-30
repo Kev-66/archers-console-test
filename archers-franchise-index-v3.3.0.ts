@@ -984,6 +984,50 @@ async function readExactResource(
   return data ?? null;
 }
 
+
+async function readResourceRefsBatched(
+  supabase: SupabaseClient,
+  refs: ContextResourceRef[],
+  includeArchived = false,
+) {
+  const grouped = new Map<string, Set<string>>();
+  for (const ref of refs) {
+    const resourceType = String(ref.resource_type ?? "").trim();
+    const resourceId = String(ref.resource_id ?? "").trim();
+    if (!resourceType || !resourceId) continue;
+    const ids = grouped.get(resourceType) ?? new Set<string>();
+    ids.add(resourceId);
+    grouped.set(resourceType, ids);
+  }
+
+  const rows: Record<string, unknown>[] = [];
+  const batchSize = 100;
+  for (const [resourceType, idSet] of grouped.entries()) {
+    const ids = [...idSet];
+    for (let offset = 0; offset < ids.length; offset += batchSize) {
+      const batch = ids.slice(offset, offset + batchSize);
+      let query = supabase
+        .from("archers_resources")
+        .select(
+          "franchise_id, resource_type, resource_id, season, status, visibility, version, data, created_at, updated_at",
+        )
+        .eq("franchise_id", FRANCHISE_ID)
+        .eq("resource_type", resourceType)
+        .in("resource_id", batch);
+
+      if (!includeArchived) {
+        query = query.eq("status", "ACTIVE");
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      rows.push(...(data ?? []));
+    }
+  }
+
+  return rows;
+}
+
 function ledgerEntries(data: JsonObject): unknown[] {
   for (const key of ["transactions", "entries", "items", "ledger"]) {
     if (Array.isArray(data[key])) return data[key] as unknown[];
@@ -1409,9 +1453,11 @@ async function readOperationVerification(
       resource_id: resourceId,
     });
   }
-  const additionalRefs = [...additionalRefMap.values()].slice(0, 250);
-  const additionalRows = await Promise.all(
-    additionalRefs.map((ref) => readExactResource(supabase, ref, true)),
+  const additionalRefs = [...additionalRefMap.values()];
+  const additionalRows = await readResourceRefsBatched(
+    supabase,
+    additionalRefs,
+    true,
   );
 
   const affectedResourceMap = new Map<string, JsonObject>();
@@ -1435,6 +1481,7 @@ async function readOperationVerification(
   addAffectedResource(queueRow);
   for (const row of additionalRows) addAffectedResource(row);
   const affectedResources = [...affectedResourceMap.values()];
+  const affectedResourceSample = affectedResources.slice(0, 250);
   const loggedVersionExpectations = new Map<string, number>();
   for (const entry of loggedAffectedEntries) {
     const resourceType = String(entry.resource_type ?? "").trim();
@@ -1549,9 +1596,13 @@ async function readOperationVerification(
       : null,
     decision_id: decisionId,
     decision_record: selectedDecision,
-    affected_resource_versions: affectedResources,
+    affected_resource_versions: affectedResourceSample,
     affected_resource_versions_deduplicated: true,
     affected_resource_versions_verified: affectedResourceVersionsVerified,
+    affected_resource_versions_total: affectedResources.length,
+    affected_resource_versions_returned: affectedResourceSample.length,
+    affected_resource_versions_truncated:
+      affectedResourceSample.length < affectedResources.length,
     logged_affected_resource_count: loggedVersionExpectations.size,
     unresolved_issues_evaluation: unresolvedIssuesEvaluation,
     unresolved_issues: [...new Set(unresolved.map((item) =>
