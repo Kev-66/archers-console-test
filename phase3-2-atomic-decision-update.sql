@@ -65,6 +65,7 @@ declare
   v_new_queue_array jsonb;
   v_new_queue_data jsonb;
   v_summary_counts jsonb;
+  v_open_decisions jsonb;
   v_current_decision jsonb;
   v_updated_decision jsonb;
   v_existing_history jsonb;
@@ -399,6 +400,34 @@ begin
     true
   );
 
+
+  select coalesce(
+    jsonb_agg(
+      jsonb_strip_nulls(
+        jsonb_build_object(
+          'decision_id', value -> 'decision_id',
+          'title', value -> 'title',
+          'summary', value -> 'summary',
+          'status', value -> 'status',
+          'priority', value -> 'priority',
+          'category', value -> 'category',
+          'due_week', value -> 'due_week',
+          'due_date', value -> 'due_date',
+          'deadline_label', value -> 'deadline_label',
+          'approval_required', value -> 'approval_required',
+          'approval_owner', value -> 'approval_owner'
+        )
+      )
+      order by ordinality
+    ),
+    '[]'::jsonb
+  )
+  into v_open_decisions
+  from jsonb_array_elements(v_new_queue_array) with ordinality as entries(value, ordinality)
+  where upper(replace(coalesce(value ->> 'status', ''), ' ', '_')) in (
+    'OPEN', 'READY_FOR_REVIEW', 'AWAITING_KEVIN', 'BLOCKED', 'DEFERRED'
+  );
+
   if p_dry_run then
     return jsonb_build_object(
       'backend_feature', 'ATOMIC_DECISION_UPDATE',
@@ -415,6 +444,8 @@ begin
       'proposed_decision', v_updated_decision,
       'updated_fields', v_updated_fields,
       'unrelated_decisions_preserved', true,
+      'legacy_open_decisions_synchronized', true,
+      'proposed_open_decisions', v_open_decisions,
       'idempotency_key_already_used', v_idempotency_key_already_used,
       'note', 'No database write was performed.'
     );
@@ -432,6 +463,7 @@ begin
   returning version into v_new_queue_version;
 
   v_state_patch := jsonb_build_object(
+    'open_decisions', v_open_decisions,
     'canon', jsonb_build_object(
       'last_operation', jsonb_build_object(
         'operation', v_operation,
@@ -482,6 +514,7 @@ begin
     'decision', v_updated_decision,
     'updated_fields', v_updated_fields,
     'unrelated_decisions_preserved', true,
+    'legacy_open_decisions_synchronized', true,
     'idempotent_replay', false
   );
 

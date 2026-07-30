@@ -136,6 +136,7 @@ Inside one database transaction, the dedicated `archers_update_decision` RPC mus
 11. Fill the appended history entry with the resulting state version.
 12. Write one audit operation and one canon event.
 13. Return the updated decision, queue version, resulting state version, operation ID, and event ID.
+14. Refresh the compact legacy `state.open_decisions` projection from the updated queue so `core_state` and snapshot fallback cannot drift.
 
 Any failure rolls back the entire transaction.
 
@@ -154,6 +155,7 @@ Any failure rolls back the entire transaction.
   "decision": {},
   "updated_fields": ["status", "resolution"],
   "unrelated_decisions_preserved": true,
+  "legacy_open_decisions_synchronized": true,
   "idempotent_replay": false
 }
 ```
