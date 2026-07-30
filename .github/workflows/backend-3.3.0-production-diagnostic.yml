@@ -6,18 +6,34 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Install actionlint
         shell: bash
         run: |
           set -euo pipefail
           bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-      - name: Lint production workflow
+      - name: Lint and publish result
         shell: bash
-        run: ./actionlint .github/workflows/backend-3.3.0-production-deploy.yml
+        run: |
+          set +e
+          ./actionlint .github/workflows/backend-3.3.0-production-deploy.yml > workflow-diagnostic-result.txt 2>&1
+          status=$?
+          if [ "$status" -eq 0 ]; then
+            printf 'VALID\n' > workflow-diagnostic-result.txt
+          else
+            sed -i '1iINVALID' workflow-diagnostic-result.txt
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workflow-diagnostic-result.txt
+          git commit -m "Record production workflow diagnostic" || true
+          git push origin HEAD:main
+          exit "$status"
