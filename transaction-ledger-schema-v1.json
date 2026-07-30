@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kev-66.github.io/archers-console-test/transaction-ledger-schema-v1.json",
+  "title": "Draft a Dynasty Transaction Ledger Schema v1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["profile_schema_version", "transactions"],
+  "properties": {
+    "profile_schema_version": { "const": 1 },
+    "ledger_id": { "type": "string" },
+    "franchise_id": { "type": "string" },
+    "season": { "type": ["integer", "null"] },
+    "source_mode": { "type": "string" },
+    "source_note": { "type": "string" },
+    "as_of_label": { "type": "string" },
+    "summary_counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "transactions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/transaction" }
+    }
+  },
+  "$defs": {
+    "team": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "team_id": { "type": ["string", "null"] },
+        "team_name": { "type": ["string", "null"] }
+      }
+    },
+    "player": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["player_name"],
+      "properties": {
+        "resource_id": { "type": ["string", "null"] },
+        "league_player_id": { "type": ["string", "null"] },
+        "player_name": { "type": "string", "minLength": 1 },
+        "position": { "type": ["string", "null"] },
+        "direction": { "enum": ["IN", "OUT", "INTERNAL", "NONE", null] },
+        "movement": { "type": ["string", "null"] },
+        "team_before": { "type": ["string", "null"] },
+        "team_after": { "type": ["string", "null"] },
+        "external_player": { "type": ["boolean", "null"] },
+        "resource_action": { "enum": ["CREATE", "UPDATE", "ARCHIVE", "NONE", null] }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["asset_type"],
+      "properties": {
+        "asset_type": {
+          "enum": ["PLAYER", "DRAFT_PICK", "CASH", "RIGHTS", "OTHER"]
+        },
+        "label": { "type": ["string", "null"] },
+        "resource_id": { "type": ["string", "null"] },
+        "league_player_id": { "type": ["string", "null"] },
+        "player_name": { "type": ["string", "null"] },
+        "position": { "type": ["string", "null"] },
+        "year": { "type": ["integer", "null"] },
+        "round": { "type": ["integer", "null"], "minimum": 1, "maximum": 7 },
+        "original_team": { "type": ["string", "null"] },
+        "status": { "type": ["string", "null"] },
+        "condition": { "type": ["string", "null"] },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "contract_effects": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "contract_summary": { "type": ["string", "null"] },
+        "cap_effect_2026_millions": { "type": ["number", "null"] },
+        "cap_effect_millions": { "type": ["number", "null"] },
+        "dead_cap_millions": { "type": ["number", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "roster_effects": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "active_roster_delta": { "type": ["integer", "null"] },
+        "practice_squad_delta": { "type": ["integer", "null"] },
+        "reserve_list_delta": { "type": ["integer", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "transaction": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["transaction_id", "transaction_type", "status", "summary"],
+      "properties": {
+        "transaction_id": { "type": "string", "minLength": 1 },
+        "transaction_type": {
+          "enum": [
+            "TRADE",
+            "SIGNING",
+            "RELEASE",
+            "WAIVER",
+            "PRACTICE_SQUAD",
+            "ELEVATION",
+            "CONTRACT",
+            "DRAFT_PICK",
+            "RESERVE_LIST",
+            "OTHER"
+          ]
+        },
+        "status": {
+          "enum": ["CONFIRMED", "PROVISIONAL", "PENDING", "AMENDED", "REVERSED", "VOIDED"]
+        },
+        "title": { "type": ["string", "null"] },
+        "summary": { "type": "string" },
+        "effective_week": { "type": ["integer", "null"], "minimum": 0 },
+        "effective_date": { "type": ["string", "null"], "format": "date" },
+        "occurred_at": { "type": ["string", "null"], "format": "date-time" },
+        "date_label": { "type": ["string", "null"] },
+        "counterparty_team": { "$ref": "#/$defs/team" },
+        "players": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/player" }
+        },
+        "assets_in": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/asset" }
+        },
+        "assets_out": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/asset" }
+        },
+        "contract_effects": { "$ref": "#/$defs/contract_effects" },
+        "roster_effects": { "$ref": "#/$defs/roster_effects" },
+        "source_label": { "type": ["string", "null"] },
+        "source_canon_event_id": { "type": ["integer", "null"] },
+        "source_audit_operation_id": { "type": ["integer", "null"] },
+        "resulting_state_version": { "type": ["integer", "null"] },
+        "related_resource_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "amends_transaction_id": { "type": ["string", "null"] },
+        "reverses_transaction_id": { "type": ["string", "null"] },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
