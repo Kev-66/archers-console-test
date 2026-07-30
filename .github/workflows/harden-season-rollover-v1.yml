@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - agent/season-rollover-engine-v1
+  workflow_dispatch:
 
 permissions:
   contents: write
