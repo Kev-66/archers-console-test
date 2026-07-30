@@ -1,5 +1,7 @@
 name: Deploy Backend 3.3.0 Production
 
+# Production trigger refreshed after repository secrets were configured.
+
 on:
   push:
     branches:
