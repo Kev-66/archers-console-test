@@ -1,0 +1,1 @@
+Authorized rollback-only execution of the exact Contract Normalization v1 transaction to capture the hidden PostgreSQL exception without changing canon.
