@@ -1,0 +1,72 @@
+name: Export Contract Normalization Source
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    if: ${{ github.event.head_commit.message == 'RUN CONTRACT NORMALIZATION SOURCE EXPORT' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PROJECT_REF: oqbylwlkrabxvpdhugrf
+      ARCHERS_ACTION_KEY: ${{ secrets.ARCHERS_ACTION_KEY }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate export prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$ARCHERS_ACTION_KEY" || { echo 'ARCHERS_ACTION_KEY is missing'; exit 1; }
+          test -f scripts/export_contract_normalization_source.py
+
+      - name: Export active contract-bearing source records
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf evidence
+          mkdir -p evidence
+          python scripts/export_contract_normalization_source.py
+
+      - name: Preserve source evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-normalization-source-${{ github.run_id }}
+          path: evidence
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Publish non-secret export status
+        if: always()
+        shell: bash
+        env:
+          EXPORT_JOB_STATUS: ${{ job.status }}
+          EXPORT_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "run_id=$EXPORT_RUN_ID"
+            echo "job_status=$EXPORT_JOB_STATUS"
+            echo "source_commit=$GITHUB_SHA"
+            if [ -f evidence/export-summary.json ]; then
+              echo "export_summary="
+              cat evidence/export-summary.json
+            else
+              echo "export_summary=unavailable"
+            fi
+          } > contract-normalization-export-status.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B export-report origin/main
+          git add contract-normalization-export-status.txt
+          git commit -m "Record contract normalization source export status" || true
+          git push origin HEAD:main
