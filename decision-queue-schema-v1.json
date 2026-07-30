@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kev-66.github.io/archers-console-test/decision-queue-schema-v1.json",
+  "title": "Draft a Dynasty Decision Queue Schema v1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["profile_schema_version", "queue_id", "decisions"],
+  "properties": {
+    "profile_schema_version": { "const": 1 },
+    "queue_id": { "const": "decision-queue" },
+    "franchise_id": { "type": "string" },
+    "season": { "type": ["integer", "null"] },
+    "source_mode": { "type": "string" },
+    "source_note": { "type": "string" },
+    "as_of_label": { "type": "string" },
+    "summary_counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/decision" }
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": { "type": ["string", "object"] }
+    }
+  },
+  "$defs": {
+    "choice": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["choice_id", "label"],
+      "properties": {
+        "choice_id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "instruction": { "type": ["string", "null"] },
+        "summary": { "type": ["string", "null"] },
+        "consequences": {
+          "type": "array",
+          "items": { "type": ["string", "object"] }
+        },
+        "related_resource_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/resource_ref" }
+        },
+        "availability": {
+          "enum": ["AVAILABLE", "BLOCKED", "CONDITIONAL", "UNKNOWN", null]
+        },
+        "evidence_status": {
+          "enum": ["VERIFIED", "PARTIAL", "UNVERIFIED", "UNKNOWN", null]
+        }
+      }
+    },
+    "resource_ref": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["resource_type", "resource_id"],
+      "properties": {
+        "resource_type": { "type": "string" },
+        "resource_id": { "type": "string" },
+        "resource_version": { "type": ["integer", "null"] },
+        "relationship": { "type": ["string", "null"] },
+        "required_for_resolution": { "type": ["boolean", "null"] }
+      }
+    },
+    "history_item": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status": { "type": ["string", "null"] },
+        "note": { "type": ["string", "null"] },
+        "state_version": { "type": ["integer", "null"] },
+        "canon_event_id": { "type": ["integer", "string", "null"] },
+        "audit_operation_id": { "type": ["integer", "string", "null"] },
+        "occurred_at": { "type": ["string", "null"] }
+      }
+    },
+    "resolution": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "choice_id": { "type": ["string", "null"] },
+        "instruction": { "type": ["string", "null"] },
+        "summary": { "type": ["string", "null"] },
+        "resolved_week": { "type": ["integer", "null"] },
+        "resolved_at": { "type": ["string", "null"] },
+        "resulting_state_version": { "type": ["integer", "null"] },
+        "canon_event_id": { "type": ["integer", "string", "null"] },
+        "audit_operation_id": { "type": ["integer", "string", "null"] },
+        "related_transaction_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["decision_id", "title", "status", "priority", "approval_required"],
+      "properties": {
+        "decision_id": { "type": "string", "minLength": 1 },
+        "category": {
+          "enum": ["ROSTER", "PRACTICE_SQUAD", "CONTRACT", "TRADE", "DRAFT", "MEDICAL", "GAME_PLAN", "STAFF", "FINANCE", "LEAGUE", "OTHER", null]
+        },
+        "status": {
+          "enum": ["OPEN", "READY_FOR_REVIEW", "AWAITING_KEVIN", "BLOCKED", "DEFERRED", "RESOLVED", "WITHDRAWN", "EXPIRED"]
+        },
+        "priority": { "enum": ["URGENT", "HIGH", "NORMAL", "LOW"] },
+        "title": { "type": "string", "minLength": 1 },
+        "summary": { "type": ["string", "null"] },
+        "note": { "type": ["string", "null"] },
+        "decision_question": { "type": ["string", "null"] },
+        "approval_required": { "type": "boolean" },
+        "approval_owner": { "type": ["string", "null"] },
+        "created_week": { "type": ["integer", "null"] },
+        "created_at": { "type": ["string", "null"] },
+        "created_state_version": { "type": ["integer", "null"] },
+        "due_week": { "type": ["integer", "null"] },
+        "due_date": { "type": ["string", "null"] },
+        "deadline_label": { "type": ["string", "null"] },
+        "review_after": { "type": ["string", "null"] },
+        "choices": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/choice" }
+        },
+        "related_player_resource_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "related_resource_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/resource_ref" }
+        },
+        "evidence_boundaries": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommended_action": { "type": ["string", "null"] },
+        "source_label": { "type": ["string", "null"] },
+        "source_canon_event_id": { "type": ["integer", "string", "null"] },
+        "source_audit_operation_id": { "type": ["integer", "string", "null"] },
+        "history": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/history_item" }
+        },
+        "resolution": { "$ref": "#/$defs/resolution" }
+      }
+    }
+  }
+}
