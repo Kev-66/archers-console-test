@@ -1,5 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const FRANCHISE_ID = "stl-2026";
+const DEFAULT_SEASON = 2026;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "content-type, x-archers-key",
@@ -32,6 +35,9 @@ const SOURCE_LABELS = new Set([
   "CORRECTION",
   "SYSTEM",
 ]);
+
+type SupabaseClient = ReturnType<typeof createClient>;
+type JsonObject = Record<string, unknown>;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -73,19 +79,19 @@ function getAdminKey(): string | undefined {
   return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
+function isPlainObject(value: unknown): value is JsonObject {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function parseJsonObject(
   value: unknown,
   fieldName: string,
-): { value?: Record<string, unknown>; error?: Response } {
+): { value?: JsonObject; error?: Response } {
   if (isPlainObject(value)) return { value };
   if (typeof value !== "string" || value.trim().length === 0) {
     return {
       error: jsonResponse(
-        { error: `${fieldName} must be a non-empty JSON-object string` },
+        { error: `${fieldName} must be a JSON object` },
         400,
       ),
     };
@@ -120,31 +126,107 @@ function integerOrNull(value: unknown): number | null | Response {
   return parsed;
 }
 
-async function readFranchiseState(supabase: ReturnType<typeof createClient>) {
+function boundedInteger(
+  value: string | null,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+): number {
+  if (value === null || value === "") return fallback;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return fallback;
+  return Math.min(Math.max(parsed, minimum), maximum);
+}
+
+function csvValues(value: string | null): string[] {
+  if (!value) return [];
+  return [...new Set(value.split(",").map((item) => item.trim()).filter(Boolean))];
+}
+
+function safeStatePaths(value: string | null): string[] | Response {
+  const paths = csvValues(value);
+  const selected = paths.length
+    ? paths
+    : [
+      "timeline",
+      "open_decisions",
+      "opponent",
+      "medical",
+      "roster.week_three_protections_status",
+      "roster.protections",
+      "roster.elevations",
+      "canon.evidence_boundaries",
+    ];
+
+  if (selected.length > 20) {
+    return jsonResponse({ error: "fields may contain at most 20 state paths" }, 400);
+  }
+  for (const path of selected) {
+    if (path.length > 160 || !/^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){0,7}$/.test(path)) {
+      return jsonResponse({ error: `Unsupported state path: ${path}` }, 400);
+    }
+  }
+  return selected;
+}
+
+function getPath(root: unknown, path: string): unknown {
+  let current = root;
+  for (const segment of path.split(".")) {
+    if (!isPlainObject(current) || !(segment in current)) return null;
+    current = current[segment];
+  }
+  return current;
+}
+
+function compactRoster(state: JsonObject): JsonObject {
+  const roster = isPlainObject(state.roster) ? state.roster : {};
+  const keys = [
+    "active_count",
+    "active_roster_count",
+    "practice_squad_count",
+    "organizational_player_count",
+    "week_three_protections_status",
+    "protections",
+    "elevations",
+    "elevation_status",
+  ];
+  const result: JsonObject = {};
+  for (const key of keys) {
+    if (roster[key] !== undefined) result[key] = roster[key];
+  }
+  return result;
+}
+
+async function readFranchiseState(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("archers_franchise_state")
     .select("id, version, state, source_checkpoint_id, seal_status, updated_at")
-    .eq("id", "stl-2026")
+    .eq("id", FRANCHISE_ID)
     .single();
   if (error) throw error;
   return data;
 }
 
 async function readRecentEvents(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   limit = 20,
+  eventType: string | null = null,
+  afterEventId: number | null = null,
 ) {
-  const { data, error } = await supabase
+  let query = supabase
     .from("archers_canon_events")
     .select("event_id, state_version, event_type, summary, exact_kevin_text, source_label, payload, created_at")
-    .eq("franchise_id", "stl-2026")
+    .eq("franchise_id", FRANCHISE_ID)
     .order("event_id", { ascending: false })
     .limit(Math.min(Math.max(limit, 1), 100));
+  if (eventType) query = query.eq("event_type", eventType);
+  if (afterEventId !== null) query = query.gt("event_id", afterEventId);
+  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }
 
-async function readSnapshot(supabase: ReturnType<typeof createClient>) {
+async function readSnapshot(supabase: SupabaseClient) {
   const [state, events, teamsResult, standingsResult, metadataResult, scheduleResult, liveResult] =
     await Promise.all([
       readFranchiseState(supabase),
@@ -154,9 +236,9 @@ async function readSnapshot(supabase: ReturnType<typeof createClient>) {
         .select("team_id, team_name, city, nickname, conference, division, alignment_status, is_archers, active, version, updated_at")
         .eq("active", true)
         .order("team_name"),
-      supabase.from("cff_standings").select("*").eq("season", 2026),
-      supabase.from("cff_league_metadata").select("*").eq("season", 2026).maybeSingle(),
-      supabase.from("archers_schedule").select("*").eq("season", 2026).order("week"),
+      supabase.from("cff_standings").select("*").eq("season", DEFAULT_SEASON),
+      supabase.from("cff_league_metadata").select("*").eq("season", DEFAULT_SEASON).maybeSingle(),
+      supabase.from("archers_schedule").select("*").eq("season", DEFAULT_SEASON).order("week"),
       supabase
         .from("cff_live_games")
         .select("*")
@@ -180,8 +262,54 @@ async function readSnapshot(supabase: ReturnType<typeof createClient>) {
   };
 }
 
+async function readCoreState(supabase: SupabaseClient) {
+  const row = await readFranchiseState(supabase);
+  const state = isPlainObject(row.state) ? row.state : {};
+  const timeline = isPlainObject(state.timeline) ? state.timeline : state.timeline ?? null;
+  const canon = isPlainObject(state.canon) ? state.canon : {};
+  const resources = isPlainObject(state.resources) ? state.resources : {};
+
+  return {
+    id: row.id,
+    version: row.version,
+    source_checkpoint_id: row.source_checkpoint_id,
+    seal_status: row.seal_status,
+    updated_at: row.updated_at,
+    timeline,
+    continuation: {
+      exact_continuation_point: getPath(state, "timeline.exact_continuation_point") ?? state.exact_continuation_point ?? null,
+      current_position: getPath(state, "timeline.current_position") ?? state.current_position ?? null,
+      week: getPath(state, "timeline.week") ?? state.week ?? null,
+      day: getPath(state, "timeline.day") ?? state.day ?? null,
+    },
+    open_decisions: Array.isArray(state.open_decisions) ? state.open_decisions : [],
+    opponent: state.opponent ?? null,
+    medical: Array.isArray(state.medical) ? state.medical : [],
+    roster: compactRoster(state),
+    cap: isPlainObject(resources.cap) ? resources.cap : resources.cap ?? null,
+    evidence_boundaries: Array.isArray(canon.evidence_boundaries) ? canon.evidence_boundaries : [],
+    available_state_sections: Object.keys(state).sort(),
+  };
+}
+
+async function readStateFields(supabase: SupabaseClient, paths: string[]) {
+  const row = await readFranchiseState(supabase);
+  const state = isPlainObject(row.state) ? row.state : {};
+  const fields: JsonObject = {};
+  for (const path of paths) fields[path] = getPath(state, path);
+  return {
+    id: row.id,
+    version: row.version,
+    source_checkpoint_id: row.source_checkpoint_id,
+    seal_status: row.seal_status,
+    updated_at: row.updated_at,
+    requested_fields: paths,
+    fields,
+  };
+}
+
 async function readLeague(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   season: number,
   week: number | null,
 ) {
@@ -215,7 +343,7 @@ async function readLeague(
 }
 
 async function readGame(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   gameId: string,
 ) {
   const [official, live, drives, events, teamStats, playerStats] = await Promise.all([
@@ -253,35 +381,125 @@ async function readGame(
   };
 }
 
+interface ResourceReadOptions {
+  resourceType: string | null;
+  resourceId: string | null;
+  includeArchived: boolean;
+  status: string | null;
+  visibility: string | null;
+  season: number | null;
+  includeData: boolean;
+  limit: number;
+  offset: number;
+}
+
 async function readResources(
-  supabase: ReturnType<typeof createClient>,
-  resourceType: string | null,
-  resourceId: string | null,
+  supabase: SupabaseClient,
+  options: ResourceReadOptions,
+) {
+  const selectFields = options.includeData
+    ? "franchise_id, resource_type, resource_id, season, status, visibility, version, source_label, data, created_at, updated_at"
+    : "franchise_id, resource_type, resource_id, season, status, visibility, version, source_label, created_at, updated_at";
+
+  let query = supabase
+    .from("archers_resources")
+    .select(selectFields, { count: "exact" })
+    .eq("franchise_id", FRANCHISE_ID)
+    .order("resource_type")
+    .order("resource_id")
+    .range(options.offset, options.offset + options.limit - 1);
+
+  if (options.resourceType) query = query.eq("resource_type", options.resourceType);
+  if (options.resourceId) query = query.eq("resource_id", options.resourceId);
+  if (options.status) query = query.eq("status", options.status);
+  else if (!options.includeArchived) query = query.eq("status", "ACTIVE");
+  if (options.visibility) query = query.eq("visibility", options.visibility);
+  if (options.season !== null) query = query.eq("season", options.season);
+
+  const { data, error, count } = await query;
+  if (error) throw error;
+  const resources = data ?? [];
+  const total = count ?? resources.length;
+  const nextOffset = options.offset + resources.length;
+
+  return {
+    resources,
+    pagination: {
+      limit: options.limit,
+      offset: options.offset,
+      returned: resources.length,
+      total,
+      has_more: nextOffset < total,
+      next_offset: nextOffset < total ? nextOffset : null,
+    },
+    data_included: options.includeData,
+    filters: {
+      resource_type: options.resourceType,
+      resource_id: options.resourceId,
+      include_archived: options.includeArchived,
+      status: options.status,
+      visibility: options.visibility,
+      season: options.season,
+    },
+  };
+}
+
+async function readResourceIndex(
+  supabase: SupabaseClient,
   includeArchived: boolean,
+  visibility: string | null,
+  includeItems: boolean,
 ) {
   let query = supabase
     .from("archers_resources")
-    .select("*")
-    .eq("franchise_id", "stl-2026")
+    .select("resource_type, resource_id, season, status, visibility, version, source_label, updated_at")
+    .eq("franchise_id", FRANCHISE_ID)
     .order("resource_type")
     .order("resource_id");
-  if (resourceType) query = query.eq("resource_type", resourceType);
-  if (resourceId) query = query.eq("resource_id", resourceId);
   if (!includeArchived) query = query.eq("status", "ACTIVE");
+  if (visibility) query = query.eq("visibility", visibility);
+
   const { data, error } = await query;
   if (error) throw error;
-  return { resources: data ?? [] };
+  const items = data ?? [];
+  const grouped = new Map<string, { count: number; max_version: number; active: number; archived: number }>();
+  for (const item of items) {
+    const type = String(item.resource_type ?? "unknown");
+    const current = grouped.get(type) ?? { count: 0, max_version: 0, active: 0, archived: 0 };
+    current.count += 1;
+    current.max_version = Math.max(current.max_version, Number(item.version) || 0);
+    if (item.status === "ACTIVE") current.active += 1;
+    else current.archived += 1;
+    grouped.set(type, current);
+  }
+
+  return {
+    total_resources: items.length,
+    by_resource_type: Object.fromEntries([...grouped.entries()].sort(([a], [b]) => a.localeCompare(b))),
+    items: includeItems ? items : undefined,
+    include_archived: includeArchived,
+    visibility,
+  };
 }
 
 async function readAudit(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   limit: number,
+  resourceType: string | null,
+  resourceId: string | null,
+  operation: string | null,
+  afterOperationId: number | null,
 ) {
-  const { data, error } = await supabase
+  let query = supabase
     .from("archers_operation_log")
     .select("operation_id, idempotency_key, operation, resource_type, resource_id, expected_version, summary, source_label, state_version, status, created_at")
     .order("operation_id", { ascending: false })
     .limit(Math.min(Math.max(limit, 1), 100));
+  if (resourceType) query = query.eq("resource_type", resourceType);
+  if (resourceId) query = query.eq("resource_id", resourceId);
+  if (operation) query = query.eq("operation", operation);
+  if (afterOperationId !== null) query = query.gt("operation_id", afterOperationId);
+  const { data, error } = await query;
   if (error) throw error;
   return { operations: data ?? [] };
 }
@@ -319,8 +537,14 @@ export default {
         const scope = (url.searchParams.get("scope") ?? "snapshot").toLowerCase();
 
         if (scope === "snapshot") return jsonResponse(await readSnapshot(supabase));
+        if (scope === "core_state") return jsonResponse(await readCoreState(supabase));
+        if (scope === "state_fields") {
+          const paths = safeStatePaths(url.searchParams.get("fields"));
+          if (paths instanceof Response) return paths;
+          return jsonResponse(await readStateFields(supabase, paths));
+        }
         if (scope === "league") {
-          const season = Number(url.searchParams.get("season") ?? "2026");
+          const season = Number(url.searchParams.get("season") ?? String(DEFAULT_SEASON));
           const weekRaw = url.searchParams.get("week");
           const week = weekRaw ? Number(weekRaw) : null;
           if (!Number.isInteger(season) || (week !== null && !Number.isInteger(week))) {
@@ -334,22 +558,92 @@ export default {
           return jsonResponse(await readGame(supabase, gameId));
         }
         if (scope === "resources") {
+          const seasonRaw = url.searchParams.get("season");
+          const season = seasonRaw === null || seasonRaw === "" ? null : Number(seasonRaw);
+          if (season !== null && !Number.isInteger(season)) {
+            return jsonResponse({ error: "season must be an integer" }, 400);
+          }
           return jsonResponse(
-            await readResources(
+            await readResources(supabase, {
+              resourceType: url.searchParams.get("resource_type"),
+              resourceId: url.searchParams.get("resource_id"),
+              includeArchived: url.searchParams.get("include_archived") === "true",
+              status: url.searchParams.get("status"),
+              visibility: url.searchParams.get("visibility"),
+              season,
+              includeData: url.searchParams.get("include_data") !== "false",
+              limit: boundedInteger(url.searchParams.get("limit"), 25, 1, 100),
+              offset: boundedInteger(url.searchParams.get("offset"), 0, 0, 100000),
+            }),
+          );
+        }
+        if (scope === "resource_index") {
+          return jsonResponse(
+            await readResourceIndex(
               supabase,
-              url.searchParams.get("resource_type"),
-              url.searchParams.get("resource_id"),
               url.searchParams.get("include_archived") === "true",
+              url.searchParams.get("visibility"),
+              url.searchParams.get("include_items") !== "false",
             ),
           );
         }
+        if (scope === "events") {
+          const afterEventRaw = url.searchParams.get("after_event_id");
+          const afterEventId = afterEventRaw ? Number(afterEventRaw) : null;
+          if (afterEventId !== null && !Number.isInteger(afterEventId)) {
+            return jsonResponse({ error: "after_event_id must be an integer" }, 400);
+          }
+          return jsonResponse({
+            events: await readRecentEvents(
+              supabase,
+              boundedInteger(url.searchParams.get("limit"), 30, 1, 100),
+              url.searchParams.get("event_type"),
+              afterEventId,
+            ),
+          });
+        }
         if (scope === "audit") {
-          return jsonResponse(await readAudit(supabase, Number(url.searchParams.get("limit") ?? "30")));
+          const afterOperationRaw = url.searchParams.get("after_operation_id");
+          const afterOperationId = afterOperationRaw ? Number(afterOperationRaw) : null;
+          if (afterOperationId !== null && !Number.isInteger(afterOperationId)) {
+            return jsonResponse({ error: "after_operation_id must be an integer" }, 400);
+          }
+          return jsonResponse(
+            await readAudit(
+              supabase,
+              boundedInteger(url.searchParams.get("limit"), 30, 1, 100),
+              url.searchParams.get("resource_type"),
+              url.searchParams.get("resource_id"),
+              url.searchParams.get("operation"),
+              afterOperationId,
+            ),
+          );
         }
         if (scope === "capabilities") {
           return jsonResponse({
-            backend_version: "3.0",
-            read_scopes: ["snapshot", "league", "game", "resources", "audit", "capabilities"],
+            backend_version: "3.1",
+            read_scopes: [
+              "snapshot",
+              "core_state",
+              "state_fields",
+              "league",
+              "game",
+              "resources",
+              "resource_index",
+              "events",
+              "audit",
+              "capabilities",
+            ],
+            resource_read_features: [
+              "SERVER_SIDE_FILTERS",
+              "PAGINATION",
+              "OPTIONAL_DATA_OMISSION",
+              "RESOURCE_INDEX",
+            ],
+            state_read_features: [
+              "COMPACT_CORE_STATE",
+              "SELECTED_STATE_PATHS",
+            ],
             write_operations: [...WRITE_OPERATIONS],
             source_labels: [...SOURCE_LABELS],
             safeguards: [
@@ -375,14 +669,14 @@ export default {
 
         // Backward compatibility with the Phase One Action body.
         let operation = typeof body.operation === "string" ? body.operation.trim().toLowerCase() : "";
-        let payload: Record<string, unknown>;
+        let payload: JsonObject;
         if (!operation && (body.patch_json !== undefined || body.patch !== undefined)) {
           operation = "patch_franchise_state";
-          const parsedPatch = parseJsonObject(body.patch ?? body.patch_json, "patch_json");
+          const parsedPatch = parseJsonObject(body.patch ?? body.patch_json, "patch");
           if (parsedPatch.error) return parsedPatch.error;
           payload = { patch: parsedPatch.value };
         } else {
-          const parsedPayload = parseJsonObject(body.payload ?? body.payload_json ?? {}, "payload_json");
+          const parsedPayload = parseJsonObject(body.payload ?? body.payload_json ?? {}, "payload");
           if (parsedPayload.error) return parsedPayload.error;
           payload = parsedPayload.value ?? {};
         }
