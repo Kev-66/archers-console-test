@@ -1,0 +1,1 @@
+Authorized rerun of the atomic 2026 player and staff contract normalization after restoring the already-applied Backend 3.3.0 migration history anchor.
