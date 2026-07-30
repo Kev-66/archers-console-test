@@ -9,7 +9,7 @@ on:
       - agent/deploy-backend-3.3.0-production
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: archers-backend-production
@@ -57,9 +57,9 @@ jobs:
           (
             cd deploy-work
             supabase init --force
-            mkdir -p supabase/migrations supabase/functions/$FUNCTION_NAME
+            mkdir -p supabase/migrations "supabase/functions/$FUNCTION_NAME"
             cp ../phase3-3-season-rollover-v1.sql supabase/migrations/20260730210000_backend_3_3_0_season_rollover.sql
-            cp ../archers-franchise-index-v3.3.0.ts supabase/functions/$FUNCTION_NAME/index.ts
+            cp ../archers-franchise-index-v3.3.0.ts "supabase/functions/$FUNCTION_NAME/index.ts"
             cat >> supabase/config.toml <<'TOML'
 
           [functions.archers-franchise]
@@ -91,7 +91,7 @@ jobs:
             cd backup-work
             supabase functions download "$FUNCTION_NAME" --project-ref "$PROJECT_REF" --use-api
           )
-          tar -czf evidence/pre-deploy-edge-function.tar.gz -C backup-work supabase/functions/$FUNCTION_NAME
+          tar -czf evidence/pre-deploy-edge-function.tar.gz -C backup-work "supabase/functions/$FUNCTION_NAME"
 
       - name: Preview remote migration
         shell: bash
@@ -262,3 +262,31 @@ jobs:
           path: evidence
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Publish non-secret deployment status
+        if: always()
+        shell: bash
+        env:
+          DEPLOYMENT_JOB_STATUS: ${{ job.status }}
+          DEPLOYMENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "run_id=$DEPLOYMENT_RUN_ID"
+            echo "job_status=$DEPLOYMENT_JOB_STATUS"
+            echo "source_commit=$GITHUB_SHA"
+            if [ -f evidence/deployment-summary.json ]; then
+              echo "deployment_summary="
+              cat evidence/deployment-summary.json
+            else
+              echo "deployment_summary=unavailable"
+            fi
+          } > production-deployment-status.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B deployment-report origin/main
+          git add production-deployment-status.txt
+          git commit -m "Record Backend 3.3.0 production deployment status" || true
+          git push origin HEAD:main
