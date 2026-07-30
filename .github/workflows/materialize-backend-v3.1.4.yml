@@ -1,0 +1,49 @@
+name: Materialize backend 3.1.4 source
+
+on:
+  push:
+    branches:
+      - agent/backend-3.1.4-verification-cleanup
+    paths:
+      - artifacts/archers-franchise-index-v3.1.4.ts.gz.b64
+      - .github/workflows/materialize-backend-v3.1.4.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Decode and verify backend source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode artifacts/archers-franchise-index-v3.1.4.ts.gz.b64 \
+            | gzip --decompress \
+            > archers-franchise-index-v3.1.4.ts
+          cp archers-franchise-index-v3.1.4.ts edge-function-archers-franchise.ts
+          echo "6ae0bf210a8c01539a1366180ae334a8932f15e43a1ad837000ca683c68c239a  archers-franchise-index-v3.1.4.ts" \
+            | sha256sum --check --strict
+          echo "6ae0bf210a8c01539a1366180ae334a8932f15e43a1ad837000ca683c68c239a  edge-function-archers-franchise.ts" \
+            | sha256sum --check --strict
+
+      - name: Commit readable source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add archers-franchise-index-v3.1.4.ts edge-function-archers-franchise.ts
+          if git diff --cached --quiet; then
+            echo "Readable source files already match the verified artifact."
+            exit 0
+          fi
+          git commit -m "Materialize backend 3.1.4 source"
+          git push origin HEAD:${{ github.ref_name }}
