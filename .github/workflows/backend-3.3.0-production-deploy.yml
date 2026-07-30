@@ -5,6 +5,7 @@ name: Deploy Backend 3.3.0 Production
 on:
   push:
     branches:
+      - main
       - agent/deploy-backend-3.3.0-production
 
 permissions:
