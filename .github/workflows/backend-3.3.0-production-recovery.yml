@@ -1,0 +1,155 @@
+name: Recover Backend 3.3.0 Production Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archers-backend-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event.head_commit.message == 'RUN BACKEND 3.3.0 PRODUCTION RECOVERY' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PROJECT_REF: oqbylwlkrabxvpdhugrf
+      FUNCTION_NAME: archers-franchise
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      ARCHERS_ACTION_KEY: ${{ secrets.ARCHERS_ACTION_KEY }}
+    steps:
+      - name: Check out production source
+        uses: actions/checkout@v4
+
+      - name: Validate credentials and recovery source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo 'SUPABASE_ACCESS_TOKEN is missing'; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo 'SUPABASE_DB_PASSWORD is missing'; exit 1; }
+          test -n "$ARCHERS_ACTION_KEY" || { echo 'ARCHERS_ACTION_KEY is missing'; exit 1; }
+          cmp --silent archers-franchise-index-v3.3.0.ts edge-function-archers-franchise.ts
+          python -m py_compile scripts/verify_backend_3_3_0_production.py
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Prepare isolated workspaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf deploy-work backup-work evidence
+          mkdir -p deploy-work backup-work evidence
+          (
+            cd deploy-work
+            supabase init --force
+            mkdir -p supabase/migrations "supabase/functions/$FUNCTION_NAME"
+            cp ../phase3-3-season-rollover-v1.sql supabase/migrations/20260730210000_backend_3_3_0_season_rollover.sql
+            cp ../archers-franchise-index-v3.3.0.ts "supabase/functions/$FUNCTION_NAME/index.ts"
+            cat >> supabase/config.toml <<'TOML'
+
+          [functions.archers-franchise]
+          verify_jwt = false
+          TOML
+          )
+          (
+            cd backup-work
+            supabase init --force
+          )
+
+      - name: Link deployment workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Back up current schema and Edge Function
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd deploy-work
+            supabase db dump --linked --password "$SUPABASE_DB_PASSWORD" --schema public --file ../evidence/pre-recovery-public-schema.sql
+          )
+          (
+            cd backup-work
+            supabase functions download "$FUNCTION_NAME" --project-ref "$PROJECT_REF" --use-api
+          )
+          tar -czf evidence/pre-recovery-edge-function.tar.gz -C backup-work "supabase/functions/$FUNCTION_NAME"
+
+      - name: Confirm migration state
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --dry-run --include-all | tee ../evidence/db-push-dry-run.txt
+          supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --include-all --yes | tee ../evidence/db-push-result.txt
+
+      - name: Deploy Backend 3.3.0 Edge Function
+        id: deploy_edge
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase functions deploy "$FUNCTION_NAME" --project-ref "$PROJECT_REF" --no-verify-jwt --use-api | tee ../evidence/edge-deploy-result.txt
+
+      - name: Verify Backend 3.3.0 and run dry run only
+        shell: bash
+        env:
+          GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
+        run: python scripts/verify_backend_3_3_0_production.py
+
+      - name: Restore prior Edge Function if validation fails
+        if: ${{ failure() && steps.deploy_edge.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "backup-work/supabase/functions/$FUNCTION_NAME/index.ts"
+          cd backup-work
+          supabase functions deploy "$FUNCTION_NAME" --project-ref "$PROJECT_REF" --no-verify-jwt --use-api
+
+      - name: Preserve recovery evidence and backups
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-3.3.0-production-recovery-${{ github.run_id }}
+          path: evidence
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Publish non-secret recovery status
+        if: always()
+        shell: bash
+        env:
+          DEPLOYMENT_JOB_STATUS: ${{ job.status }}
+          DEPLOYMENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "run_id=$DEPLOYMENT_RUN_ID"
+            echo "job_status=$DEPLOYMENT_JOB_STATUS"
+            echo "source_commit=$GITHUB_SHA"
+            if [ -f evidence/deployment-summary.json ]; then
+              echo "deployment_summary="
+              cat evidence/deployment-summary.json
+            else
+              echo "deployment_summary=unavailable"
+            fi
+          } > production-deployment-status.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B deployment-report origin/main
+          git add production-deployment-status.txt
+          git commit -m "Record Backend 3.3.0 production recovery status" || true
+          git push origin HEAD:main
