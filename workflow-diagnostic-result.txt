@@ -1,13 +1,1 @@
-INVALID
-.github/workflows/backend-3.3.0-production-deploy.yml:52:9: shellcheck reported issue in this script: SC2086:info:10:62: Double quote to prevent globbing and word splitting [shellcheck]
-   |
-52 |         run: |
-   |         ^~~~
-.github/workflows/backend-3.3.0-production-deploy.yml:52:9: shellcheck reported issue in this script: SC2086:info:8:51: Double quote to prevent globbing and word splitting [shellcheck]
-   |
-52 |         run: |
-   |         ^~~~
-.github/workflows/backend-3.3.0-production-deploy.yml:84:9: shellcheck reported issue in this script: SC2086:info:10:85: Double quote to prevent globbing and word splitting [shellcheck]
-   |
-84 |         run: |
-   |         ^~~~
+VALID
