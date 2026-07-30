@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/season-rollover-v1/contract-v1.schema.json",
+  "title": "Draft a Dynasty Canonical Contract v1",
+  "type": "object",
+  "required": ["end_season"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "contract_kind": { "enum": ["PLAYER", "STAFF"] },
+    "player_id": { "type": "string", "minLength": 1 },
+    "staff_id": { "type": "string", "minLength": 1 },
+    "start_season": { "type": "integer", "minimum": 1 },
+    "end_season": { "type": "integer", "minimum": 1 },
+    "salary_by_season": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]{4}$": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "cap_hit_by_season": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]{4}$": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["season", "type"],
+        "properties": {
+          "season": { "type": "integer", "minimum": 1 },
+          "type": { "type": "string", "minLength": 1 },
+          "status": { "type": "string" },
+          "amount": { "type": ["number", "null"] },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "current_season": { "type": "integer", "minimum": 1 },
+    "years_remaining": { "type": "integer", "minimum": 0 },
+    "current_salary": { "type": ["number", "null"] },
+    "current_salary_season": { "type": ["integer", "null"], "minimum": 1 },
+    "current_cap_hit": { "type": ["number", "null"] },
+    "current_cap_hit_season": { "type": ["integer", "null"], "minimum": 1 },
+    "rollover_status": { "enum": ["ACTIVE", "FINAL_YEAR", "EXPIRED"] },
+    "options_due": { "type": "array" },
+    "last_rollover": {
+      "type": "object",
+      "properties": {
+        "from_season": { "type": "integer", "minimum": 1 },
+        "to_season": { "type": "integer", "minimum": 1 },
+        "processed_at": { "type": "string" },
+        "operation": { "const": "rollover_season" }
+      },
+      "required": ["from_season", "to_season", "operation"],
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["start_season", "end_season"]
+      },
+      "then": {
+        "$comment": "Runtime validation additionally requires start_season <= end_season."
+      }
+    }
+  ],
+  "additionalProperties": true
+}

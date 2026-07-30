@@ -1,0 +1,176 @@
+name: Backend 3.3.0 CI
+
+on:
+  push:
+    branches:
+      - agent/season-rollover-engine-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: postgres
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Bootstrap isolated database
+        run: psql -f tests/backend-3.2.0/bootstrap.sql
+
+      - name: Apply Backend 3.2.0 decision migration
+        run: psql -f phase3-2-atomic-decision-update.sql
+
+      - name: Run Backend 3.2.0 decision regressions
+        run: psql -f tests/backend-3.2.0/atomic-decision-update.sql
+
+      - name: Apply Season Rollover Engine v1 migration
+        run: psql -f phase3-3-season-rollover-v1.sql
+
+      - name: Run Season Rollover Engine regressions
+        run: psql -f tests/backend-3.3.0/season-rollover-v1.sql
+
+      - name: Verify generated Edge sources
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+
+          versioned = Path("archers-franchise-index-v3.3.0.ts").read_bytes()
+          canonical = Path("edge-function-archers-franchise.ts").read_bytes()
+          assert versioned == canonical, "versioned and canonical Edge sources differ"
+
+          text = versioned.decode("utf-8")
+          required = [
+              'const BACKEND_VERSION = "3.3.0";',
+              '"rollover_season",',
+              '"ATOMIC_SEASON_ROLLOVER"',
+              '"PLAYER_AND_STAFF_CONTRACT_ROLLOVER"',
+              '"CONTRACT_RESOURCE_FINGERPRINT"',
+              '"DRY_RUN_REQUIRED_FOR_SEASON_ROLLOVER"',
+              '"NO_AUTOMATIC_OPTION_EXERCISE"',
+              '"archers_rollover_season"',
+              'expected_state_version is required for rollover_season',
+              'affected_resource_versions_verified',
+              'readResourceRefsBatched',
+              'affected_resource_versions_truncated',
+          ]
+          for token in required:
+              assert token in text, token
+          assert '.slice(0, 250);\n  const additionalRows' not in text
+
+          print("edge_source_sha256=" + hashlib.sha256(versioned).hexdigest())
+          print("edge_source_bytes=" + str(len(versioned)))
+          PY
+
+      - name: Parse TypeScript
+        run: |
+          npm install --no-save typescript@5.9.2
+          node - <<'NODE'
+          const fs = require("fs");
+          const ts = require("typescript");
+          const source = fs.readFileSync("archers-franchise-index-v3.3.0.ts", "utf8");
+          const result = ts.transpileModule(source, {
+            compilerOptions: {
+              target: ts.ScriptTarget.ES2022,
+              module: ts.ModuleKind.ESNext,
+            },
+            reportDiagnostics: true,
+          });
+          const diagnostics = result.diagnostics || [];
+          if (diagnostics.length) {
+            for (const diagnostic of diagnostics) {
+              console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
+            }
+            process.exit(1);
+          }
+          console.log("TypeScript parser diagnostics: 0");
+          NODE
+
+      - name: Validate contract schema and documentation
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          schema = json.loads(Path("schemas/season-rollover-v1/contract-v1.schema.json").read_text(encoding="utf-8"))
+          design = Path("SEASON_ROLLOVER_ENGINE_V1_DESIGN.md").read_text(encoding="utf-8")
+          contract = Path("SEASON_ROLLOVER_ENGINE_V1_CONTRACT_SCHEMA.md").read_text(encoding="utf-8")
+          deployment = Path("BACKEND_3.3.0_DEPLOYMENT_GUIDE.md").read_text(encoding="utf-8")
+          migration = Path("phase3-3-season-rollover-v1.sql").read_text(encoding="utf-8")
+          regressions = Path("tests/backend-3.3.0/season-rollover-v1.sql").read_text(encoding="utf-8")
+          league = Path("DAD_LEAGUE_AND_RESOURCE_RULES.md").read_text(encoding="utf-8")
+
+          assert schema["$id"].endswith("contract-v1.schema.json")
+          for token in [
+              "player contracts",
+              "staff contracts",
+              "dry run",
+              "expected_resources",
+              "No automatic options",
+          ]:
+              assert token.lower() in design.lower(), token
+
+          for token in [
+              "salary_by_season",
+              "cap_hit_by_season",
+              "end_season",
+              "options",
+              "legacy",
+          ]:
+              assert token.lower() in contract.lower(), token
+
+          for token in [
+              "archers_rollover_season",
+              "rollover_season",
+              "expected_resources",
+              "p_dry_run",
+              "player",
+              "staff",
+          ]:
+              assert token in migration, token
+
+          for token in [
+              "idempotent replay",
+              "stale resource",
+              "option was exercised",
+              "staff contract",
+              "legacy contract",
+              "duplicate fingerprint",
+          ]:
+              assert token.lower() in regressions.lower(), token
+
+          assert "## 13. Season rollover" in league
+          assert "must not exercise an option" in league
+          assert "Backend 3.3.0" in deployment
+          print("Season Rollover v1 schema and documentation validation passed")
+          PY

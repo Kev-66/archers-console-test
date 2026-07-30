@@ -185,3 +185,20 @@ A correction must preserve:
 - Provenance that a correction occurred.
 
 Do not use correction to revise a disappointing result, improve a roster choice, or clean up inconvenient history.
+
+
+## 13. Season rollover
+
+Season rollover is a protected league-year transition. Consult the current capabilities and use `rollover_season` only when advertised.
+
+Before execution:
+
+- Read the current global state version and authoritative current season.
+- Run `rollover_season` with `dry_run: true`.
+- Review every player and staff contract blocker, warning, expiration, final-year flag, salary change, cap change, and option due.
+- Normalize legacy contract summaries instead of inferring future terms.
+- Obtain Kevin approval for the actual offseason transition.
+- Execute with the exact `expected_resources` fingerprint from the current dry run and a new idempotency key.
+- Verify the resulting operation, canon event, state version, and every affected resource version.
+
+Rollover advances exactly one season. It may derive remaining years, select established year-specific compensation, and flag expiration or options. It must not exercise an option, renew or terminate a contract, release or sign a player, hire or fire staff, restructure compensation, or make any other discretionary personnel decision.
