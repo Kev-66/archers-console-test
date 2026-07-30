@@ -1,5 +1,6 @@
 (() => {
   const DRAFT_STORAGE_KEY = "archers-frontoffice-draft-capital-collapsed";
+  const TRADE_STORAGE_KEY = "archers-frontoffice-trade-center-collapsed";
   const TRANSACTION_STORAGE_KEY = "archers-frontoffice-transaction-center-collapsed";
 
   function readCollapsed(key) {
@@ -100,6 +101,19 @@
     });
   }
 
+  function upgradeTradeCenter() {
+    const section = document.getElementById("fo-trade-center");
+    if (!section) return false;
+    return upgradeSection({
+      section,
+      heading: section.querySelector(".fo-trade-heading"),
+      body: document.getElementById("fo-trade-collapsible-body"),
+      source: document.getElementById("fo-trade-source"),
+      storageKey: TRADE_STORAGE_KEY,
+      label: "Trade Center"
+    });
+  }
+
   function upgradeTransactionCenter() {
     const section = document.getElementById("fo-transaction-center");
     if (!section) return false;
@@ -161,11 +175,12 @@
 
   function initialize(attempt = 0) {
     const draftReady = upgradeDraftCapital();
+    const tradeReady = upgradeTradeCenter();
     const transactionReady = upgradeTransactionCenter();
     const coverageReady = setupCoverageObservers();
     syncCoverage();
 
-    if ((!draftReady || !transactionReady || !coverageReady) && attempt < 120) {
+    if ((!draftReady || !tradeReady || !transactionReady || !coverageReady) && attempt < 120) {
       setTimeout(() => initialize(attempt + 1), 50);
     }
   }
