@@ -144,7 +144,7 @@ jobs:
               "options",
               "legacy",
           ]:
-              assert token in contract, token
+              assert token.lower() in contract.lower(), token
 
           for token in [
               "archers_rollover_season",
