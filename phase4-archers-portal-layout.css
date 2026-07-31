@@ -1,0 +1,25 @@
+.tabs-wrap {
+  margin-bottom: 24px;
+}
+
+.portal-shell {
+  padding-top: 10px;
+}
+
+.portal-hero {
+  padding-top: 34px;
+}
+
+@media (max-width: 760px) {
+  .tabs-wrap {
+    margin-bottom: 22px;
+  }
+
+  .portal-shell {
+    padding-top: 8px;
+  }
+
+  .portal-hero {
+    padding-top: 32px;
+  }
+}
