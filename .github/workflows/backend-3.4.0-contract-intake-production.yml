@@ -69,8 +69,6 @@ jobs:
           SQL
             cp ../phase3-4-contract-intake-guard-v1.sql \
               supabase/migrations/20260731005000_contract_intake_guard_v1.sql
-            cp ../phase3-4-contract-intake-guard-v1-self-test.sql \
-              supabase/migrations/20260731005100_contract_intake_guard_v1_self_test.sql
 
             cp ../archers-franchise-index-v3.4.0.ts \
               "supabase/functions/$FUNCTION_NAME/index.ts"
@@ -120,7 +118,7 @@ jobs:
           tar -czf evidence/pre-contract-intake-edge-function.tar.gz \
             -C backup-work "supabase/functions/$FUNCTION_NAME"
 
-      - name: Preview Contract Intake Guard migrations
+      - name: Preview Contract Intake Guard migration
         shell: bash
         run: |
           set -euo pipefail
@@ -128,13 +126,27 @@ jobs:
           supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --dry-run --include-all \
             | tee ../evidence/db-push-dry-run.txt
 
-      - name: Apply Contract Intake Guard and installation self-test
+      - name: Apply Contract Intake Guard migration
         shell: bash
         run: |
           set -euo pipefail
           cd deploy-work
           supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --include-all --yes \
             | tee ../evidence/db-push-result.txt
+
+      - name: Run transactional Contract Intake Guard self-test
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v psql >/dev/null 2>&1 || {
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+          }
+          POOLER_URL="$(cat deploy-work/supabase/.temp/pooler-url)"
+          PGPASSWORD="$SUPABASE_DB_PASSWORD" \
+            psql "$POOLER_URL" -X -v ON_ERROR_STOP=1 -v VERBOSITY=verbose \
+              -f phase3-4-contract-intake-guard-v1-self-test.sql \
+              2>&1 | tee evidence/contract-intake-self-test-result.txt
 
       - name: Deploy Backend 3.4.0 Edge Function
         id: deploy_edge
