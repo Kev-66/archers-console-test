@@ -22,6 +22,7 @@ jobs:
         run: |
           node --check archers-app-config.js
           node --check phase4-archers-portal.js
+          node --check phase4-archers-portal-team-labels.js
           node --check tests/portal/portal-dom-smoke.js
           node --check tests/portal/portal-live-browser.mjs
 
@@ -39,7 +40,9 @@ jobs:
           from pathlib import Path
 
           base = Path("index-phase2.html").read_text(encoding="utf-8")
+          loader = Path("index-phase3.html").read_text(encoding="utf-8")
           portal = Path("phase4-archers-portal.js").read_text(encoding="utf-8")
+          labels = Path("phase4-archers-portal-team-labels.js").read_text(encoding="utf-8")
 
           required_base_ids = [
               "record", "standing", "week", "day", "opponent", "kickoff",
@@ -54,7 +57,12 @@ jobs:
 
           assert 'data-tab="overview"' in portal
           assert 'overviewButton.textContent = "Portal"' in portal
-          print("Base-console compatibility anchors passed")
+          assert "phase4-archers-portal-layout.css" in loader
+          assert "phase4-archers-portal-team-labels.js" in loader
+          assert 'from("cff_teams")' in labels
+          for forbidden in [".insert(", ".update(", ".delete(", ".upsert(", ".rpc("]:
+              assert forbidden not in labels, forbidden
+          print("Base-console compatibility and team-label checks passed")
           PY
 
   live-browser:
@@ -87,6 +95,20 @@ jobs:
           PORTAL_BASE_URL: http://127.0.0.1:4173
           PORTAL_EVIDENCE_DIR: portal-browser-evidence
         run: node tests/portal/portal-live-browser.mjs
+
+      - name: Verify human-readable calendar labels
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          summary = json.loads(Path("portal-browser-evidence/portal-live-summary.json").read_text(encoding="utf-8"))
+          calendar = summary["calendarText"]
+          internal_code = re.search(r"\b(?:vs|at) [a-z0-9._:-]{2,5}\b", calendar)
+          assert internal_code is None, f"Internal team ID remained in calendar: {internal_code.group(0)}"
+          print("Portal calendar uses human-readable franchise names")
+          PY
 
       - name: Upload Portal browser evidence
         if: always()
