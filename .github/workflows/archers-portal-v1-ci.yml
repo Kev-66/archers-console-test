@@ -25,6 +25,7 @@ jobs:
           node --check phase4-archers-portal-team-labels.js
           node --check tests/portal/portal-dom-smoke.js
           node --check tests/portal/portal-live-browser.mjs
+          node --check tests/portal/portal-route-sweep.mjs
 
       - name: Run Portal static regressions
         run: python tests/portal/portal-v1-static.py
@@ -96,6 +97,12 @@ jobs:
           PORTAL_EVIDENCE_DIR: portal-browser-evidence
         run: node tests/portal/portal-live-browser.mjs
 
+      - name: Sweep all operations-room routes
+        env:
+          PORTAL_BASE_URL: http://127.0.0.1:4173
+          PORTAL_EVIDENCE_DIR: portal-browser-evidence
+        run: node tests/portal/portal-route-sweep.mjs
+
       - name: Verify human-readable calendar labels
         run: |
           python - <<'PY'
@@ -107,7 +114,10 @@ jobs:
           calendar = summary["calendarText"]
           internal_code = re.search(r"\b(?:vs|at) [a-z0-9._:-]{2,5}\b", calendar)
           assert internal_code is None, f"Internal team ID remained in calendar: {internal_code.group(0)}"
-          print("Portal calendar uses human-readable franchise names")
+          route_sweep = json.loads(Path("portal-browser-evidence/portal-route-sweep.json").read_text(encoding="utf-8"))
+          assert len(route_sweep["results"]) == 7
+          assert route_sweep["blockedWrites"] == []
+          print("Portal calendar and operations-room route sweep passed")
           PY
 
       - name: Upload Portal browser evidence
