@@ -11,8 +11,8 @@ declare
   v_season integer;
   v_result jsonb;
   v_rejected boolean := false;
-  v_valid_id constant text := '__contract-intake-guard-valid-self-test__';
-  v_invalid_id constant text := '__contract-intake-guard-invalid-self-test__';
+  v_valid_id constant text := 'contract-intake-guard-valid-self-test';
+  v_invalid_id constant text := 'contract-intake-guard-invalid-self-test';
 begin
   select
     version,
