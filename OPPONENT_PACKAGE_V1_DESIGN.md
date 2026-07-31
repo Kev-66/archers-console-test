@@ -75,3 +75,7 @@ Before execution, the workflow must:
 5. Execute once with a stable idempotency key.
 6. Verify one audit operation, one canon event, the five resources and the resulting state version.
 7. Confirm Archers player and staff resource counts remain unchanged.
+
+## Implementation checkpoint
+
+The branch contains the complete package, read-only Weekly Ops integration, schema validation, browser evidence tests and guarded production seeding workflow. Production remains untouched until the pull request is approved and merged with the explicit production trigger commit.
