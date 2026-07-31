@@ -1,4 +1,29 @@
 run_id=30603801847
-job_status=failure
+job_status=success
 source_commit=8fc40dca7234897bf8d810431cba7ad2ed51f40e
-production_summary=unavailable
+production_summary=
+{
+  "active_roster_profiles": 53,
+  "already_applied": true,
+  "archers_medical_state_unchanged": true,
+  "archers_player_resource_count_unchanged": 69,
+  "archers_roster_state_unchanged": true,
+  "archers_staff_resource_count_unchanged": 16,
+  "backend_version": "3.4.0",
+  "idempotency_key": "baltimore-opponent-package-v1-20260731",
+  "operation_verified": true,
+  "practice_squad_profiles": 16,
+  "real_archers_personnel_transaction_executed": false,
+  "resources_verified": 5,
+  "season_rollover_executed": false,
+  "staff_profiles": 13,
+  "state_version_after": 38,
+  "state_version_before": 38
+}
+browser_verification=passed
+browser_source_mode=LIVE_PRODUCTION_RESOURCES
+browser_blocked_writes=0
+browser_page_errors=0
+browser_console_errors=0
+evidence_artifact_id=8782924314
+evidence_sha256=c4812237772df8a15576fef1c79725e850342e9a986d0b9944aa6300fd2d0c22
