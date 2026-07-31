@@ -23,6 +23,7 @@ jobs:
           node --check archers-app-config.js
           node --check phase4-archers-portal.js
           node --check tests/portal/portal-dom-smoke.js
+          node --check tests/portal/portal-live-browser.mjs
 
       - name: Run Portal static regressions
         run: python tests/portal/portal-v1-static.py
@@ -55,3 +56,43 @@ jobs:
           assert 'overviewButton.textContent = "Portal"' in portal
           print("Base-console compatibility anchors passed")
           PY
+
+  live-browser:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Chromium validation dependencies
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Start branch console server
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/archers-portal-http.log 2>&1 &
+          echo $! > /tmp/archers-portal-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/index-phase3.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/archers-portal-http.log
+          exit 1
+
+      - name: Run live read-only Portal validation
+        env:
+          PORTAL_BASE_URL: http://127.0.0.1:4173
+          PORTAL_EVIDENCE_DIR: portal-browser-evidence
+        run: node tests/portal/portal-live-browser.mjs
+
+      - name: Upload Portal browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: archers-portal-browser-${{ github.run_id }}
+          path: portal-browser-evidence
+          if-no-files-found: warn
+          retention-days: 14
