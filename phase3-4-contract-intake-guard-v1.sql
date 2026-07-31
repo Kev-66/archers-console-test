@@ -352,8 +352,13 @@ begin
         'message', 'salary_by_season keys must be four-digit seasons',
         'key', v_key
       ));
-    elsif jsonb_typeof(v_value) is distinct from 'number'
-       or (v_value #>> '{}')::numeric < 0 then
+    elsif jsonb_typeof(v_value) is distinct from 'number' then
+      v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
+        'code', 'INVALID_SALARY_VALUE',
+        'message', 'salary schedule values must be nonnegative numbers',
+        'season', v_key
+      ));
+    elsif (v_value #>> '{}')::numeric < 0 then
       v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
         'code', 'INVALID_SALARY_VALUE',
         'message', 'salary schedule values must be nonnegative numbers',
@@ -401,8 +406,13 @@ begin
         'message', 'cap_hit_by_season keys must be four-digit seasons',
         'key', v_key
       ));
-    elsif jsonb_typeof(v_value) is distinct from 'number'
-       or (v_value #>> '{}')::numeric < 0 then
+    elsif jsonb_typeof(v_value) is distinct from 'number' then
+      v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
+        'code', 'INVALID_CAP_VALUE',
+        'message', 'cap schedule values must be nonnegative numbers',
+        'season', v_key
+      ));
+    elsif (v_value #>> '{}')::numeric < 0 then
       v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
         'code', 'INVALID_CAP_VALUE',
         'message', 'cap schedule values must be nonnegative numbers',
@@ -435,9 +445,19 @@ begin
       for v_key, v_value in
         select key, value from jsonb_each(v_guaranteed_schedule)
       loop
-        if v_key !~ '^[0-9]{4}$'
-           or jsonb_typeof(v_value) is distinct from 'number'
-           or (v_value #>> '{}')::numeric < 0 then
+        if v_key !~ '^[0-9]{4}$' then
+          v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
+            'code', 'INVALID_GUARANTEE_VALUE',
+            'message', 'guaranteed_by_season requires nonnegative numeric season values',
+            'season', v_key
+          ));
+        elsif jsonb_typeof(v_value) is distinct from 'number' then
+          v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
+            'code', 'INVALID_GUARANTEE_VALUE',
+            'message', 'guaranteed_by_season requires nonnegative numeric season values',
+            'season', v_key
+          ));
+        elsif (v_value #>> '{}')::numeric < 0 then
           v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
             'code', 'INVALID_GUARANTEE_VALUE',
             'message', 'guaranteed_by_season requires nonnegative numeric season values',
@@ -515,8 +535,11 @@ begin
     select value as option_row, ordinality as ordinal_position
     from jsonb_array_elements(v_options) with ordinality
     where jsonb_typeof(value) = 'object'
-      and coalesce(value ->> 'season', '') ~ '^[0-9]{4}$'
-      and (value ->> 'season')::integer = v_effective_season
+      and case
+        when coalesce(value ->> 'season', '') ~ '^[0-9]{4}$'
+          then (value ->> 'season')::integer
+        else null
+      end = v_effective_season
       and upper(coalesce(nullif(trim(value ->> 'status'), ''), 'UNRESOLVED'))
         in ('UNRESOLVED', 'PENDING')
   ) due;
