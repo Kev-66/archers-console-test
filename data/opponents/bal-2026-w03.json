@@ -1,0 +1,2205 @@
+{
+  "package_schema_version": 1,
+  "package_id": "bal-2026-w03",
+  "authorized_scope": "FULL_OPPONENT_PACKAGE",
+  "team_identity": {
+    "schema_version": 1,
+    "team_id": "bal",
+    "team_name": "Baltimore Admirals",
+    "season": 2026,
+    "as_of_week": 3,
+    "record": "2-0",
+    "conference": "Continental",
+    "division": "Atlantic",
+    "competitive_window": "CONTENDER",
+    "general_manager": "Nadia Winslow",
+    "head_coach": "Caleb Rourke",
+    "organizational_summary": "Baltimore is a veteran contender built around controlled offense, protection communication, a powerful defensive front and disguised pressure. The Admirals prefer to make opponents solve repeated details rather than chase constant tempo.",
+    "culture_traits": [
+      "ASSIGNMENT_DISCIPLINE",
+      "VETERAN_TRUST",
+      "PHYSICALITY",
+      "FIELD_POSITION",
+      "LOW_VOLATILITY"
+    ],
+    "offensive_identity": {
+      "name": "Multiple West Coast / wide-zone play action",
+      "base_personnel": [
+        "11",
+        "12",
+        "21"
+      ],
+      "tempo": "DELIBERATE_WITH_SELECTIVE_TEMPO",
+      "run_game": [
+        "WIDE_ZONE",
+        "DUO",
+        "INSIDE_ZONE",
+        "SPLIT_FLOW"
+      ],
+      "pass_game": [
+        "PLAY_ACTION_OVERS",
+        "GLANCE_ROUTES",
+        "SAIL",
+        "DIG_OVER",
+        "TE_SEAMS",
+        "BACK_CHECKDOWNS"
+      ],
+      "protection": "Center-led identification with half-slide, six-man and movement-pocket answers.",
+      "core_intent": "Force linebackers and safeties to declare run-fit rules, then throw behind the reaction."
+    },
+    "defensive_identity": {
+      "name": "3-4 / 4-2 hybrid simulated-pressure defense",
+      "base_fronts": [
+        "ODD",
+        "OVER",
+        "MINT"
+      ],
+      "coverage_family": [
+        "MATCH_QUARTERS",
+        "COVER_3_MATCH",
+        "PRESS_MAN",
+        "ROBBER"
+      ],
+      "pressure_tools": [
+        "CREEPERS",
+        "SIMULATED_PRESSURE",
+        "DOUBLE_MUG",
+        "EDGE_INTERIOR_GAMES"
+      ],
+      "core_intent": "Stress protection communication while preserving seven-man coverage pictures."
+    },
+    "special_teams_identity": {
+      "approach": "FIELD_POSITION_FIRST",
+      "strengths": [
+        "DIRECTIONAL_PUNTING",
+        "COVERAGE_DISCIPLINE",
+        "SELECTIVE_RETURN_AGGRESSION"
+      ]
+    },
+    "known_availability": [
+      {
+        "player_id": "bal-damon-kirkland",
+        "player_name": "Damon Kirkland",
+        "position": "RG",
+        "status": "QUESTIONABLE",
+        "issue": "Knee status unresolved. St. Louis will prepare as though he will play.",
+        "confidence": "VERIFIED_CURRENT_STATE"
+      }
+    ],
+    "provenance_note": "Established as the reusable Week Three Baltimore opponent package after Kevin Dorey authorized full opponent development."
+  },
+  "team_staff": {
+    "schema_version": 1,
+    "staff_id": "bal-2026",
+    "team_id": "bal",
+    "team_name": "Baltimore Admirals",
+    "season": 2026,
+    "as_of_week": 3,
+    "staff": [
+      {
+        "staff_id": "bal-nadia-winslow",
+        "name": "Nadia Winslow",
+        "job": "General Manager",
+        "department": "FRONT_OFFICE",
+        "age": 47,
+        "years_with_team": 6,
+        "responsibilities": [
+          "ROSTER_CONSTRUCTION",
+          "CONTRACT_STRATEGY",
+          "ORGANIZATIONAL_DIRECTION"
+        ],
+        "profile": "Patient executive protecting a veteran contention window without treating every short-term need as permission to spend future assets.",
+        "voice": "Calm, economical and strategic. States the organizational cost after the football benefit.",
+        "decision_lens": "Sustain a contender without hollowing out the next two seasons."
+      },
+      {
+        "staff_id": "bal-caleb-rourke",
+        "name": "Caleb Rourke",
+        "job": "Head Coach",
+        "department": "COACHING",
+        "age": 52,
+        "years_with_team": 4,
+        "responsibilities": [
+          "TEAM_PREPARATION",
+          "GAME_MANAGEMENT",
+          "ROLE_CLARITY"
+        ],
+        "profile": "Detail-oriented veteran coach whose teams play slowly, physically and with low tolerance for assignment errors.",
+        "voice": "Clipped, pragmatic and unsentimental. Separates trust from talent and preparation from reputation.",
+        "decision_lens": "Make the opponent execute patiently for four quarters."
+      },
+      {
+        "staff_id": "bal-marisol-vega",
+        "name": "Marisol Vega",
+        "job": "Offensive Coordinator",
+        "department": "COACHING",
+        "age": 41,
+        "years_with_team": 3,
+        "responsibilities": [
+          "OFFENSIVE_DESIGN",
+          "SEQUENCING",
+          "QUARTERBACK_PLAN"
+        ],
+        "profile": "Builds a multiple-personnel offense around formation shifts, wide-zone conflict and play-action answers.",
+        "voice": "Precise and fast when discussing leverage. Frames calls as sequences rather than isolated plays.",
+        "decision_lens": "Force defenders to declare their rules, then attack the rule."
+      },
+      {
+        "staff_id": "bal-gideon-price",
+        "name": "Gideon Price",
+        "job": "Defensive Coordinator",
+        "department": "COACHING",
+        "age": 46,
+        "years_with_team": 4,
+        "responsibilities": [
+          "DEFENSIVE_DESIGN",
+          "PRESSURE_PLAN",
+          "THIRD_DOWN"
+        ],
+        "profile": "Aggressive protection-stress coordinator who combines simulated pressure with disciplined match coverage.",
+        "voice": "Blunt and diagnostic. Names the communication failure he is trying to create.",
+        "decision_lens": "Make the quarterback and center solve different pictures before the snap."
+      },
+      {
+        "staff_id": "bal-emmett-shaw",
+        "name": "Emmett Shaw",
+        "job": "Special Teams Coordinator",
+        "department": "COACHING",
+        "age": 48,
+        "years_with_team": 2,
+        "responsibilities": [
+          "COVERAGE_UNITS",
+          "RETURN_GAME",
+          "FIELD_POSITION"
+        ],
+        "profile": "Conservative field-position coach with strong coverage standards and selective return aggression.",
+        "voice": "Practical and detail-heavy. Talks in landmarks, operation time and hidden yards.",
+        "decision_lens": "Win field position without donating a volatility play."
+      },
+      {
+        "staff_id": "bal-theo-larkin",
+        "name": "Theo Larkin",
+        "job": "Quarterbacks Coach",
+        "department": "COACHING",
+        "age": 38,
+        "years_with_team": 3,
+        "responsibilities": [
+          "QUARTERBACK_DEVELOPMENT",
+          "PROTECTION_COMMUNICATION"
+        ],
+        "profile": "Works closely with Dorian Hale on coverage confirmation and pressure answers.",
+        "voice": "Methodical and question-driven. Tests the quarterback’s answer instead of giving it away.",
+        "decision_lens": "Keep Hale on schedule and out of unnecessary second reactions."
+      },
+      {
+        "staff_id": "bal-ramon-sykes",
+        "name": "Ramon Sykes",
+        "job": "Running Backs Coach",
+        "department": "COACHING",
+        "age": 43,
+        "years_with_team": 2,
+        "responsibilities": [
+          "RUNNING_BACK_ROTATION",
+          "BALL_SECURITY",
+          "PASS_PROTECTION"
+        ],
+        "profile": "Demands decisive reads and treats pass protection as the price of third-down snaps.",
+        "voice": "Direct and compact. Praises decisions more than yardage.",
+        "decision_lens": "Preserve Boone while keeping the offense’s identity intact."
+      },
+      {
+        "staff_id": "bal-jasper-wynn",
+        "name": "Jasper Wynn",
+        "job": "Wide Receivers Coach",
+        "department": "COACHING",
+        "age": 36,
+        "years_with_team": 3,
+        "responsibilities": [
+          "RELEASE_PLAN",
+          "ROUTE_DETAIL",
+          "BLOCKING"
+        ],
+        "profile": "Technician focused on releases, spacing and late-route body control.",
+        "voice": "Specific and visual. Describes leverage and body position in short corrections.",
+        "decision_lens": "Create clean pictures for Hale without tipping the route family."
+      },
+      {
+        "staff_id": "bal-colin-havel",
+        "name": "Colin Havel",
+        "job": "Offensive Line Coach",
+        "department": "COACHING",
+        "age": 55,
+        "years_with_team": 5,
+        "responsibilities": [
+          "PROTECTION_RULES",
+          "RUN_GAME_COMBINATIONS",
+          "LINE_ROTATION"
+        ],
+        "profile": "Veteran line coach whose unit wins through communication and five-man cohesion.",
+        "voice": "Measured and literal. Refuses to blame one blocker before confirming the protection rule.",
+        "decision_lens": "Keep the interior connected if Kirkland is limited or unavailable."
+      },
+      {
+        "staff_id": "bal-anton-briggs",
+        "name": "Anton Briggs",
+        "job": "Defensive Line Coach",
+        "department": "COACHING",
+        "age": 44,
+        "years_with_team": 4,
+        "responsibilities": [
+          "FRONT_TECHNIQUE",
+          "RUSH_GAMES",
+          "RUN_CONTROL"
+        ],
+        "profile": "Builds the front around Vickers’ power and coordinated edge/interior games.",
+        "voice": "Sparse and technical. Talks hands, hips and rush spacing.",
+        "decision_lens": "Compress the pocket without opening escape lanes."
+      },
+      {
+        "staff_id": "bal-tariq-mullen",
+        "name": "Tariq Mullen",
+        "job": "Linebackers Coach",
+        "department": "COACHING",
+        "age": 39,
+        "years_with_team": 2,
+        "responsibilities": [
+          "RUN_FITS",
+          "MATCH_COVERAGE",
+          "GREEN_DOT_SUPPORT"
+        ],
+        "profile": "Prioritizes eye discipline and route distribution in Baltimore’s match structures.",
+        "voice": "Calm, corrective and assignment-first.",
+        "decision_lens": "Make play action expensive without vacating the intermediate middle."
+      },
+      {
+        "staff_id": "bal-leah-okoye",
+        "name": "Leah Okoye",
+        "job": "Defensive Backs Coach",
+        "department": "COACHING",
+        "age": 37,
+        "years_with_team": 3,
+        "responsibilities": [
+          "COVERAGE_TECHNIQUE",
+          "DISGUISE",
+          "BALL_PRODUCTION"
+        ],
+        "profile": "Teaches patient press technique and coordinated safety rotation.",
+        "voice": "Controlled and exact. Uses alignment and leverage language, not slogans.",
+        "decision_lens": "Disguise without sacrificing communication."
+      },
+      {
+        "staff_id": "bal-mason-creed",
+        "name": "Mason Creed",
+        "job": "Director of Performance",
+        "department": "PERFORMANCE",
+        "age": 45,
+        "years_with_team": 4,
+        "responsibilities": [
+          "WORKLOAD",
+          "RECOVERY",
+          "CONDITIONING"
+        ],
+        "profile": "Coordinates practice load and recovery for an older core.",
+        "voice": "Concise and evidence-bound. Distinguishes fatigue management from softness.",
+        "decision_lens": "Keep the veteran roster explosive late in games."
+      }
+    ]
+  },
+  "team_roster": {
+    "schema_version": 1,
+    "roster_id": "bal-2026",
+    "team_id": "bal",
+    "team_name": "Baltimore Admirals",
+    "season": 2026,
+    "as_of_week": 3,
+    "active_count": 53,
+    "practice_squad_count": 16,
+    "active_roster": [
+      {
+        "player_id": "bal-dorian-hale",
+        "player_name": "Dorian Hale",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "QB",
+        "position_code": "QB",
+        "age": 30,
+        "overall_rating": 88,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "OFFENSE",
+        "jersey_number": 9,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Veteran pocket passer with anticipatory timing, strong intermediate placement and command of protection changes. Limited designed-run value but moves efficiently within the pocket.",
+        "traits": [
+          "FIELD_GENERAL",
+          "ANTICIPATION",
+          "PLAY_ACTION"
+        ]
+      },
+      {
+        "player_id": "bal-cole-marrett",
+        "player_name": "Cole Marrett",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "QB",
+        "position_code": "QB",
+        "age": 25,
+        "overall_rating": 73,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 12,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Mobile backup who can change launch points and threaten the edge. Deep-ball placement remains inconsistent.",
+        "traits": [
+          "MOBILITY",
+          "BOOT_ACTION"
+        ]
+      },
+      {
+        "player_id": "bal-ellis-navarro",
+        "player_name": "Ellis Navarro",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "QB",
+        "position_code": "QB",
+        "age": 23,
+        "overall_rating": 66,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 16,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental passer with live arm talent and limited regular-season experience.",
+        "traits": [
+          "ARM_TALENT",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-malachi-boone",
+        "player_name": "Malachi Boone",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "RB",
+        "position_code": "RB",
+        "age": 27,
+        "overall_rating": 86,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "OFFENSE",
+        "jersey_number": 24,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "One-cut feature back with contact balance, patience on wide zone and enough receiving skill to remain on the field.",
+        "traits": [
+          "ONE_CUT",
+          "CONTACT_BALANCE",
+          "PASS_PROTECTION"
+        ]
+      },
+      {
+        "player_id": "bal-tyrell-givens",
+        "player_name": "Tyrell Givens",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "RB",
+        "position_code": "RB",
+        "age": 24,
+        "overall_rating": 78,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "OFFENSE",
+        "jersey_number": 32,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Explosive change-of-pace runner used on perimeter concepts, screens and two-back packages.",
+        "traits": [
+          "BURST",
+          "RECEIVING"
+        ]
+      },
+      {
+        "player_id": "bal-jonah-bell",
+        "player_name": "Jonah Bell",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "RB",
+        "position_code": "RB",
+        "age": 26,
+        "overall_rating": 72,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 36,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Trusted third-down protector and checkdown option. Offers limited creation beyond the design.",
+        "traits": [
+          "PASS_PROTECTION",
+          "RELIABILITY"
+        ]
+      },
+      {
+        "player_id": "bal-reece-tatum",
+        "player_name": "Reece Tatum",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "RB",
+        "position_code": "RB",
+        "age": 22,
+        "overall_rating": 68,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 28,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Young space player and primary kick return candidate with open-field acceleration.",
+        "traits": [
+          "RETURN_VALUE",
+          "OPEN_FIELD"
+        ]
+      },
+      {
+        "player_id": "bal-graham-ives",
+        "player_name": "Graham Ives",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "FB",
+        "position_code": "FB",
+        "age": 29,
+        "overall_rating": 75,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "OFFENSE",
+        "jersey_number": 44,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Lead blocker and H-back who allows Baltimore to shift between 21 and 12 personnel without substituting.",
+        "traits": [
+          "VERSATILITY",
+          "LEAD_BLOCKING"
+        ]
+      },
+      {
+        "player_id": "bal-kellan-ward",
+        "player_name": "Kellan Ward",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 28,
+        "overall_rating": 87,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "OFFENSE",
+        "jersey_number": 11,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Boundary X receiver with strong releases, late hands and contested-catch control. Primary isolation target.",
+        "traits": [
+          "PRESS_RELEASE",
+          "CONTESTED_CATCH",
+          "SIDELINE"
+        ]
+      },
+      {
+        "player_id": "bal-treyson-pike",
+        "player_name": "Treyson Pike",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 26,
+        "overall_rating": 84,
+        "development_trait": "STAR",
+        "role": "STARTER",
+        "unit": "OFFENSE",
+        "jersey_number": 13,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Smooth Z receiver who threatens intermediate crossers, glance routes and deep overs off play action.",
+        "traits": [
+          "ROUTE_RUNNING",
+          "YAC",
+          "PLAY_ACTION"
+        ]
+      },
+      {
+        "player_id": "bal-malik-renfro",
+        "player_name": "Malik Renfro",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 25,
+        "overall_rating": 80,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "OFFENSE",
+        "jersey_number": 18,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Starting slot receiver with quick option-route decisions and punt-return value.",
+        "traits": [
+          "SLOT_SEPARATION",
+          "OPTION_ROUTES",
+          "PUNT_RETURN"
+        ]
+      },
+      {
+        "player_id": "bal-jalen-morrow",
+        "player_name": "Jalen Morrow",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 23,
+        "overall_rating": 76,
+        "development_trait": "HIDDEN",
+        "role": "ROTATION",
+        "unit": "OFFENSE",
+        "jersey_number": 19,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Vertical rotational receiver who can stress quarters safeties and clear space for crossers.",
+        "traits": [
+          "VERTICAL_SPEED",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-cedric-ames",
+        "player_name": "Cedric Ames",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 28,
+        "overall_rating": 71,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 15,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Veteran fourth receiver and core special-teams contributor.",
+        "traits": [
+          "SPECIAL_TEAMS",
+          "RELIABILITY"
+        ]
+      },
+      {
+        "player_id": "bal-noah-temple",
+        "player_name": "Noah Temple",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 22,
+        "overall_rating": 68,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 83,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental slot/outside hybrid with sudden releases but unfinished route detail.",
+        "traits": [
+          "RELEASE",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-owen-stroud",
+        "player_name": "Owen Stroud",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "TE",
+        "position_code": "TE",
+        "age": 29,
+        "overall_rating": 85,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "OFFENSE",
+        "jersey_number": 87,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Complete tight end who blocks the edge, works seams and becomes Hale’s trusted answer against pressure.",
+        "traits": [
+          "INLINE_BLOCKING",
+          "SEAM_TARGET",
+          "PRESSURE_ANSWER"
+        ]
+      },
+      {
+        "player_id": "bal-bryce-calloway",
+        "player_name": "Bryce Calloway",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "TE",
+        "position_code": "TE",
+        "age": 25,
+        "overall_rating": 76,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "OFFENSE",
+        "jersey_number": 81,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Move tight end used in split-flow, insert and detached alignments.",
+        "traits": [
+          "MOVE_TE",
+          "MISDIRECTION"
+        ]
+      },
+      {
+        "player_id": "bal-marcus-dobbins",
+        "player_name": "Marcus Dobbins",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "TE",
+        "position_code": "TE",
+        "age": 27,
+        "overall_rating": 70,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 89,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Heavy inline blocker for short yardage and condensed formations.",
+        "traits": [
+          "INLINE_BLOCKING",
+          "SHORT_YARDAGE"
+        ]
+      },
+      {
+        "player_id": "bal-evan-reddick",
+        "player_name": "Evan Reddick",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LT",
+        "position_code": "LT",
+        "age": 29,
+        "overall_rating": 86,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "OFFENSE",
+        "jersey_number": 71,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Steady blindside protector with patient hands and strong recovery balance.",
+        "traits": [
+          "PASS_PROTECTION",
+          "RECOVERY"
+        ]
+      },
+      {
+        "player_id": "bal-marcus-ellison",
+        "player_name": "Marcus Ellison",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LG",
+        "position_code": "LG",
+        "age": 27,
+        "overall_rating": 81,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "OFFENSE",
+        "jersey_number": 66,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Powerful run blocker who works well on double teams and inside zone combinations.",
+        "traits": [
+          "DOUBLE_TEAMS",
+          "RUN_BLOCKING"
+        ]
+      },
+      {
+        "player_id": "bal-jonah-raines",
+        "player_name": "Jonah Raines",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "C",
+        "position_code": "C",
+        "age": 30,
+        "overall_rating": 84,
+        "development_trait": "STAR",
+        "role": "STARTER",
+        "unit": "OFFENSE",
+        "jersey_number": 58,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Veteran center who sets protections and handles movement with leverage rather than mass.",
+        "traits": [
+          "PROTECTION_ID",
+          "LEVERAGE"
+        ]
+      },
+      {
+        "player_id": "bal-damon-kirkland",
+        "player_name": "Damon Kirkland",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "RG",
+        "position_code": "RG",
+        "age": 31,
+        "overall_rating": 83,
+        "development_trait": "STAR",
+        "role": "STARTER",
+        "unit": "OFFENSE",
+        "jersey_number": 64,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "QUESTIONABLE",
+        "football_notes": "Physical veteran right guard and firm pocket anchor. Knee status is unresolved entering Week Three.",
+        "traits": [
+          "ANCHOR",
+          "POWER",
+          "VETERAN"
+        ]
+      },
+      {
+        "player_id": "bal-caleb-morrow",
+        "player_name": "Caleb Morrow",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "RT",
+        "position_code": "RT",
+        "age": 28,
+        "overall_rating": 82,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "OFFENSE",
+        "jersey_number": 74,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Balanced right tackle with strong length; vulnerable when forced to redirect repeatedly.",
+        "traits": [
+          "LENGTH",
+          "RUN_BLOCKING"
+        ]
+      },
+      {
+        "player_id": "bal-quentin-frost",
+        "player_name": "Quentin Frost",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "OT",
+        "position_code": "OT",
+        "age": 25,
+        "overall_rating": 75,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "OFFENSE",
+        "jersey_number": 76,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Primary swing tackle with functional experience on both edges.",
+        "traits": [
+          "SWING_TACKLE",
+          "VERSATILITY"
+        ]
+      },
+      {
+        "player_id": "bal-nico-barr",
+        "player_name": "Nico Barr",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "G",
+        "position_code": "G",
+        "age": 24,
+        "overall_rating": 73,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "OFFENSE",
+        "jersey_number": 62,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "First interior reserve and likely replacement at right guard if Kirkland cannot play.",
+        "traits": [
+          "INTERIOR_VERSATILITY"
+        ]
+      },
+      {
+        "player_id": "bal-devin-osei",
+        "player_name": "Devin Osei",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "C",
+        "position_code": "C",
+        "age": 23,
+        "overall_rating": 71,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 60,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental center/guard with movement skills and limited anchor strength.",
+        "traits": [
+          "MOVEMENT",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-abram-hodge",
+        "player_name": "Abram Hodge",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "G/T",
+        "position_code": "G/T",
+        "age": 22,
+        "overall_rating": 69,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 68,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Young multi-position lineman with length and raw hand timing.",
+        "traits": [
+          "VERSATILITY",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-ronan-vale",
+        "player_name": "Ronan Vale",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "EDGE",
+        "position_code": "EDGE",
+        "age": 27,
+        "overall_rating": 91,
+        "development_trait": "XFACTOR",
+        "role": "PREMIUM",
+        "unit": "DEFENSE",
+        "jersey_number": 95,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Premier edge rusher who wins with speed-to-power, long-arm compression and inside counters. Baltimore moves him to attack protection rules.",
+        "traits": [
+          "SPEED_TO_POWER",
+          "LONG_ARM",
+          "ALIGNMENT_FLEXIBILITY"
+        ]
+      },
+      {
+        "player_id": "bal-deshawn-waller",
+        "player_name": "DeShawn Waller",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "EDGE",
+        "position_code": "EDGE",
+        "age": 29,
+        "overall_rating": 84,
+        "development_trait": "STAR",
+        "role": "STARTER",
+        "unit": "DEFENSE",
+        "jersey_number": 91,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Strong-side edge who sets the run and converts tight-end surfaces into power rushes.",
+        "traits": [
+          "EDGE_SETTING",
+          "POWER_RUSH"
+        ]
+      },
+      {
+        "player_id": "bal-keon-ricks",
+        "player_name": "Keon Ricks",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "EDGE",
+        "position_code": "EDGE",
+        "age": 24,
+        "overall_rating": 77,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "DEFENSE",
+        "jersey_number": 53,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "High-motor rotational rusher used in wide alignments and overload packages.",
+        "traits": [
+          "MOTOR",
+          "WIDE_ALIGNMENT"
+        ]
+      },
+      {
+        "player_id": "bal-avery-moss",
+        "player_name": "Avery Moss",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "EDGE",
+        "position_code": "EDGE",
+        "age": 22,
+        "overall_rating": 71,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 98,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental speed rusher with early-down run-discipline concerns.",
+        "traits": [
+          "FIRST_STEP",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-leon-vickers",
+        "player_name": "Leon Vickers",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "DT",
+        "position_code": "DT",
+        "age": 30,
+        "overall_rating": 88,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "DEFENSE",
+        "jersey_number": 97,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Powerful interior disruptor who controls centers, compresses the pocket and anchors Baltimore’s front.",
+        "traits": [
+          "ANCHOR",
+          "POCKET_COMPRESSION",
+          "TWO_GAP"
+        ]
+      },
+      {
+        "player_id": "bal-tj-carrow",
+        "player_name": "T.J. Carrow",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "DE",
+        "position_code": "DE",
+        "age": 27,
+        "overall_rating": 82,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "DEFENSE",
+        "jersey_number": 94,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Long five-technique who closes cutback lanes and creates clean rush paths for the edges.",
+        "traits": [
+          "LENGTH",
+          "RUN_CONTROL"
+        ]
+      },
+      {
+        "player_id": "bal-omari-bledsoe",
+        "player_name": "Omari Bledsoe",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "DT",
+        "position_code": "DT",
+        "age": 25,
+        "overall_rating": 79,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "DEFENSE",
+        "jersey_number": 90,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Quick three-technique featured in passing-down games and interior twists.",
+        "traits": [
+          "QUICKNESS",
+          "STUNTS"
+        ]
+      },
+      {
+        "player_id": "bal-seth-kincaid",
+        "player_name": "Seth Kincaid",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "NT",
+        "position_code": "NT",
+        "age": 29,
+        "overall_rating": 74,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 99,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Backup nose tackle for heavy fronts and short-yardage snaps.",
+        "traits": [
+          "MASS",
+          "SHORT_YARDAGE"
+        ]
+      },
+      {
+        "player_id": "bal-luka-petrovic",
+        "player_name": "Luka Petrović",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "DE",
+        "position_code": "DE",
+        "age": 23,
+        "overall_rating": 70,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 92,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental two-gapping end with strong frame and unfinished counter work.",
+        "traits": [
+          "FRAME",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-micah-sorrell",
+        "player_name": "Micah Sorrell",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "MLB",
+        "position_code": "MLB",
+        "age": 28,
+        "overall_rating": 87,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "DEFENSE",
+        "jersey_number": 54,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Defensive signal caller with fast run fits, strong route recognition and reliable tackling.",
+        "traits": [
+          "GREEN_DOT",
+          "RUN_FITS",
+          "ROUTE_RECOGNITION"
+        ]
+      },
+      {
+        "player_id": "bal-darnell-finch",
+        "player_name": "Darnell Finch",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LB",
+        "position_code": "LB",
+        "age": 27,
+        "overall_rating": 82,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "DEFENSE",
+        "jersey_number": 50,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Range linebacker who carries backs and tight ends in match coverage.",
+        "traits": [
+          "RANGE",
+          "MATCH_COVERAGE"
+        ]
+      },
+      {
+        "player_id": "bal-carter-wynn",
+        "player_name": "Carter Wynn",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LB",
+        "position_code": "LB",
+        "age": 24,
+        "overall_rating": 76,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "DEFENSE",
+        "jersey_number": 57,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "SAM and sub-package linebacker used on the line, in pressure looks and as a flat defender.",
+        "traits": [
+          "VERSATILITY",
+          "PRESSURE"
+        ]
+      },
+      {
+        "player_id": "bal-hassan-greer",
+        "player_name": "Hassan Greer",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LB",
+        "position_code": "LB",
+        "age": 26,
+        "overall_rating": 72,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 59,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Reliable reserve MIKE and core coverage-unit player.",
+        "traits": [
+          "RELIABILITY",
+          "SPECIAL_TEAMS"
+        ]
+      },
+      {
+        "player_id": "bal-eli-markham",
+        "player_name": "Eli Markham",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LB",
+        "position_code": "LB",
+        "age": 22,
+        "overall_rating": 69,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 45,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental pursuit linebacker with speed and inconsistent block deconstruction.",
+        "traits": [
+          "PURSUIT",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-jace-holloman",
+        "player_name": "Jace Holloman",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "CB",
+        "position_code": "CB",
+        "age": 27,
+        "overall_rating": 89,
+        "development_trait": "SUPERSTAR",
+        "role": "PREMIUM",
+        "unit": "DEFENSE",
+        "jersey_number": 21,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Physical number-one corner with patient press technique, route anticipation and ball production.",
+        "traits": [
+          "PRESS_MAN",
+          "ANTICIPATION",
+          "BALL_SKILLS"
+        ]
+      },
+      {
+        "player_id": "bal-nico-darnell",
+        "player_name": "Nico Darnell",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "CB",
+        "position_code": "CB",
+        "age": 26,
+        "overall_rating": 83,
+        "development_trait": "STAR",
+        "role": "STARTER",
+        "unit": "DEFENSE",
+        "jersey_number": 23,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Long second corner comfortable in match quarters and boundary press.",
+        "traits": [
+          "LENGTH",
+          "MATCH_QUARTERS"
+        ]
+      },
+      {
+        "player_id": "bal-isaiah-lockridge",
+        "player_name": "Isaiah Lockridge",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "NB",
+        "position_code": "NB",
+        "age": 24,
+        "overall_rating": 78,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "DEFENSE",
+        "jersey_number": 31,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Starting nickel with short-area quickness and timing as a pressure player.",
+        "traits": [
+          "NICKEL",
+          "BLITZ_TIMING"
+        ]
+      },
+      {
+        "player_id": "bal-braden-cole",
+        "player_name": "Braden Cole",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "CB",
+        "position_code": "CB",
+        "age": 29,
+        "overall_rating": 74,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "DEFENSE",
+        "jersey_number": 26,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Veteran dime corner and special-teams gunner.",
+        "traits": [
+          "DIME",
+          "SPECIAL_TEAMS"
+        ]
+      },
+      {
+        "player_id": "bal-ty-okafor",
+        "player_name": "Ty Okafor",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "CB",
+        "position_code": "CB",
+        "age": 23,
+        "overall_rating": 71,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 29,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental outside corner with recovery speed and inconsistent eye discipline.",
+        "traits": [
+          "RECOVERY_SPEED",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-landon-price",
+        "player_name": "Landon Price",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "CB",
+        "position_code": "CB",
+        "age": 22,
+        "overall_rating": 68,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 37,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Young slot prospect with quick feet and limited strength.",
+        "traits": [
+          "SHORT_AREA",
+          "DEVELOPMENTAL"
+        ]
+      },
+      {
+        "player_id": "bal-elias-gantt",
+        "player_name": "Elias Gantt",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "FS",
+        "position_code": "FS",
+        "age": 29,
+        "overall_rating": 86,
+        "development_trait": "STAR",
+        "role": "PREMIUM",
+        "unit": "DEFENSE",
+        "jersey_number": 20,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Range safety who disguises rotation, closes throwing windows and organizes the secondary.",
+        "traits": [
+          "RANGE",
+          "DISGUISE",
+          "COMMUNICATION"
+        ]
+      },
+      {
+        "player_id": "bal-tavon-reed",
+        "player_name": "Tavon Reed",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "SS",
+        "position_code": "SS",
+        "age": 27,
+        "overall_rating": 84,
+        "development_trait": "STAR",
+        "role": "STARTER",
+        "unit": "DEFENSE",
+        "jersey_number": 27,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Downhill strong safety with tight-end coverage ability and force-player temperament.",
+        "traits": [
+          "DOWNHILL",
+          "TE_COVERAGE"
+        ]
+      },
+      {
+        "player_id": "bal-corey-maddox",
+        "player_name": "Corey Maddox",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "S",
+        "position_code": "S",
+        "age": 25,
+        "overall_rating": 75,
+        "development_trait": "NORMAL",
+        "role": "ROTATION",
+        "unit": "DEFENSE",
+        "jersey_number": 33,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Third safety used in big nickel, robber and pressure packages.",
+        "traits": [
+          "BIG_NICKEL",
+          "ROBBER"
+        ]
+      },
+      {
+        "player_id": "bal-miles-hsu",
+        "player_name": "Miles Hsu",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "FS",
+        "position_code": "FS",
+        "age": 23,
+        "overall_rating": 70,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 38,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental deep safety and coverage-unit contributor.",
+        "traits": [
+          "RANGE",
+          "SPECIAL_TEAMS"
+        ]
+      },
+      {
+        "player_id": "bal-mateo-serrano",
+        "player_name": "Mateo Serrano",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "K",
+        "position_code": "K",
+        "age": 30,
+        "overall_rating": 81,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "SPECIAL_TEAMS",
+        "jersey_number": 5,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Accurate veteran kicker with dependable range through 52 yards in normal conditions.",
+        "traits": [
+          "ACCURACY",
+          "VETERAN"
+        ]
+      },
+      {
+        "player_id": "bal-grant-lyle",
+        "player_name": "Grant Lyle",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "P",
+        "position_code": "P",
+        "age": 28,
+        "overall_rating": 79,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "SPECIAL_TEAMS",
+        "jersey_number": 6,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Directional punter with consistent hang time and placement near the boundary.",
+        "traits": [
+          "DIRECTIONAL",
+          "HANG_TIME"
+        ]
+      },
+      {
+        "player_id": "bal-nolan-pierce",
+        "player_name": "Nolan Pierce",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LS",
+        "position_code": "LS",
+        "age": 31,
+        "overall_rating": 72,
+        "development_trait": "NORMAL",
+        "role": "STARTER",
+        "unit": "SPECIAL_TEAMS",
+        "jersey_number": 46,
+        "roster_status": "ACTIVE_ROSTER",
+        "availability": "AVAILABLE",
+        "football_notes": "Experienced long snapper with stable operation times.",
+        "traits": [
+          "RELIABILITY"
+        ]
+      }
+    ],
+    "practice_squad": [
+      {
+        "player_id": "bal-adrian-wynn",
+        "player_name": "Adrian Wynn",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "QB",
+        "position_code": "QB",
+        "age": 24,
+        "overall_rating": 64,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 4,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Practice-squad quarterback with movement ability and scout-team value.",
+        "traits": [
+          "MOBILITY"
+        ]
+      },
+      {
+        "player_id": "bal-kamal-sutton",
+        "player_name": "Kamal Sutton",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "RB",
+        "position_code": "RB",
+        "age": 23,
+        "overall_rating": 65,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 35,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Compact runner with burst and limited pass-protection experience.",
+        "traits": [
+          "BURST"
+        ]
+      },
+      {
+        "player_id": "bal-milo-kersey",
+        "player_name": "Milo Kersey",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "FB/TE",
+        "position_code": "FB/TE",
+        "age": 25,
+        "overall_rating": 63,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 48,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Hybrid blocker used to mirror heavy personnel in practice.",
+        "traits": [
+          "VERSATILITY"
+        ]
+      },
+      {
+        "player_id": "bal-daequan-lowe",
+        "player_name": "Daequan Lowe",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 23,
+        "overall_rating": 65,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 17,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Vertical scout-team receiver with developmental route detail.",
+        "traits": [
+          "VERTICAL_SPEED"
+        ]
+      },
+      {
+        "player_id": "bal-finn-delaney",
+        "player_name": "Finn Delaney",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "WR",
+        "position_code": "WR",
+        "age": 22,
+        "overall_rating": 62,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 84,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Quick slot prospect with return practice value.",
+        "traits": [
+          "QUICKNESS"
+        ]
+      },
+      {
+        "player_id": "bal-roman-keats",
+        "player_name": "Roman Keats",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "TE",
+        "position_code": "TE",
+        "age": 24,
+        "overall_rating": 64,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 85,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Inline developmental tight end with blocking value.",
+        "traits": [
+          "INLINE_BLOCKING"
+        ]
+      },
+      {
+        "player_id": "bal-niles-barlow",
+        "player_name": "Niles Barlow",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "OT",
+        "position_code": "OT",
+        "age": 24,
+        "overall_rating": 64,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 72,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Long developmental tackle with anchor concerns.",
+        "traits": [
+          "LENGTH"
+        ]
+      },
+      {
+        "player_id": "bal-rafi-corbett",
+        "player_name": "Rafi Corbett",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "G",
+        "position_code": "G",
+        "age": 23,
+        "overall_rating": 63,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 65,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Movement guard suited for zone concepts.",
+        "traits": [
+          "MOVEMENT"
+        ]
+      },
+      {
+        "player_id": "bal-gabe-durham",
+        "player_name": "Gabe Durham",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "C",
+        "position_code": "C",
+        "age": 25,
+        "overall_rating": 65,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "OFFENSE",
+        "jersey_number": 61,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Reserve center with reliable snapping and protection recall.",
+        "traits": [
+          "RELIABILITY"
+        ]
+      },
+      {
+        "player_id": "bal-quentin-nwosu",
+        "player_name": "Quentin Nwosu",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "EDGE",
+        "position_code": "EDGE",
+        "age": 23,
+        "overall_rating": 66,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 96,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Explosive practice rusher still learning run fits.",
+        "traits": [
+          "FIRST_STEP"
+        ]
+      },
+      {
+        "player_id": "bal-pavel-grin",
+        "player_name": "Pavel Grin",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "DT",
+        "position_code": "DT",
+        "age": 24,
+        "overall_rating": 64,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 93,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Low-pad-level interior lineman with limited length.",
+        "traits": [
+          "LEVERAGE"
+        ]
+      },
+      {
+        "player_id": "bal-jamar-epps",
+        "player_name": "Jamar Epps",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LB",
+        "position_code": "LB",
+        "age": 24,
+        "overall_rating": 65,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 52,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Coverage linebacker and special-teams candidate.",
+        "traits": [
+          "COVERAGE"
+        ]
+      },
+      {
+        "player_id": "bal-simon-mays",
+        "player_name": "Simon Mays",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "LB",
+        "position_code": "LB",
+        "age": 22,
+        "overall_rating": 63,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 55,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Developmental run-and-chase linebacker.",
+        "traits": [
+          "PURSUIT"
+        ]
+      },
+      {
+        "player_id": "bal-luka-sneed",
+        "player_name": "Luka Sneed",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "CB",
+        "position_code": "CB",
+        "age": 23,
+        "overall_rating": 66,
+        "development_trait": "HIDDEN",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 30,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Fast outside corner with raw press technique.",
+        "traits": [
+          "SPEED"
+        ]
+      },
+      {
+        "player_id": "bal-malcolm-orr",
+        "player_name": "Malcolm Orr",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "S",
+        "position_code": "S",
+        "age": 24,
+        "overall_rating": 64,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "DEFENSE",
+        "jersey_number": 39,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Versatile reserve safety with coverage-unit value.",
+        "traits": [
+          "VERSATILITY"
+        ]
+      },
+      {
+        "player_id": "bal-tate-drummond",
+        "player_name": "Tate Drummond",
+        "team_id": "bal",
+        "team_name": "Baltimore Admirals",
+        "position": "K/P",
+        "position_code": "K/P",
+        "age": 25,
+        "overall_rating": 61,
+        "development_trait": "NORMAL",
+        "role": "DEPTH",
+        "unit": "SPECIAL_TEAMS",
+        "jersey_number": 7,
+        "roster_status": "PRACTICE_SQUAD",
+        "availability": "AVAILABLE",
+        "football_notes": "Emergency specialist with functional punting and kickoff ability.",
+        "traits": [
+          "EMERGENCY_SPECIALIST"
+        ]
+      }
+    ],
+    "captains": [
+      "Dorian Hale",
+      "Owen Stroud",
+      "Leon Vickers",
+      "Micah Sorrell",
+      "Elias Gantt",
+      "Mateo Serrano"
+    ],
+    "coverage": "FULL_ACTIVE_AND_PRACTICE_SQUAD",
+    "contract_data_status": "NOT_TRACKED_FOR_OPPONENT_SCOUTING",
+    "provenance_note": "Fictional league roster established for canon and scouting use. No opponent contract terms are asserted."
+  },
+  "team_depth_chart": {
+    "schema_version": 1,
+    "depth_chart_id": "bal-2026-w03",
+    "team_id": "bal",
+    "season": 2026,
+    "week": 3,
+    "status": "PROJECTED",
+    "offense": [
+      {
+        "role": "QB",
+        "players": [
+          "bal-dorian-hale",
+          "bal-cole-marrett",
+          "bal-ellis-navarro"
+        ]
+      },
+      {
+        "role": "RB",
+        "players": [
+          "bal-malachi-boone",
+          "bal-tyrell-givens",
+          "bal-jonah-bell",
+          "bal-reece-tatum"
+        ]
+      },
+      {
+        "role": "FB/HB",
+        "players": [
+          "bal-graham-ives",
+          "bal-bryce-calloway"
+        ]
+      },
+      {
+        "role": "X WR",
+        "players": [
+          "bal-kellan-ward",
+          "bal-jalen-morrow"
+        ]
+      },
+      {
+        "role": "Z WR",
+        "players": [
+          "bal-treyson-pike",
+          "bal-cedric-ames"
+        ]
+      },
+      {
+        "role": "Slot WR",
+        "players": [
+          "bal-malik-renfro",
+          "bal-noah-temple"
+        ]
+      },
+      {
+        "role": "TE",
+        "players": [
+          "bal-owen-stroud",
+          "bal-bryce-calloway",
+          "bal-marcus-dobbins"
+        ]
+      },
+      {
+        "role": "LT",
+        "players": [
+          "bal-evan-reddick",
+          "bal-quentin-frost"
+        ]
+      },
+      {
+        "role": "LG",
+        "players": [
+          "bal-marcus-ellison",
+          "bal-nico-barr"
+        ]
+      },
+      {
+        "role": "C",
+        "players": [
+          "bal-jonah-raines",
+          "bal-devin-osei"
+        ]
+      },
+      {
+        "role": "RG",
+        "players": [
+          "bal-damon-kirkland",
+          "bal-nico-barr",
+          "bal-abram-hodge"
+        ],
+        "note": "Kirkland questionable; Barr is the primary projected replacement."
+      },
+      {
+        "role": "RT",
+        "players": [
+          "bal-caleb-morrow",
+          "bal-quentin-frost"
+        ]
+      }
+    ],
+    "defense": [
+      {
+        "role": "LDE / 5T",
+        "players": [
+          "bal-tj-carrow",
+          "bal-luka-petrovic"
+        ]
+      },
+      {
+        "role": "NT",
+        "players": [
+          "bal-leon-vickers",
+          "bal-seth-kincaid"
+        ]
+      },
+      {
+        "role": "3T / RDE",
+        "players": [
+          "bal-omari-bledsoe",
+          "bal-tj-carrow"
+        ]
+      },
+      {
+        "role": "Rush EDGE",
+        "players": [
+          "bal-ronan-vale",
+          "bal-avery-moss"
+        ]
+      },
+      {
+        "role": "Strong EDGE",
+        "players": [
+          "bal-deshawn-waller",
+          "bal-keon-ricks"
+        ]
+      },
+      {
+        "role": "MIKE",
+        "players": [
+          "bal-micah-sorrell",
+          "bal-hassan-greer"
+        ]
+      },
+      {
+        "role": "WILL",
+        "players": [
+          "bal-darnell-finch",
+          "bal-eli-markham"
+        ]
+      },
+      {
+        "role": "SAM / Pressure LB",
+        "players": [
+          "bal-carter-wynn",
+          "bal-keon-ricks"
+        ]
+      },
+      {
+        "role": "CB1",
+        "players": [
+          "bal-jace-holloman",
+          "bal-braden-cole"
+        ]
+      },
+      {
+        "role": "CB2",
+        "players": [
+          "bal-nico-darnell",
+          "bal-ty-okafor"
+        ]
+      },
+      {
+        "role": "Nickel",
+        "players": [
+          "bal-isaiah-lockridge",
+          "bal-landon-price"
+        ]
+      },
+      {
+        "role": "Dime / Big Nickel",
+        "players": [
+          "bal-corey-maddox",
+          "bal-braden-cole"
+        ]
+      },
+      {
+        "role": "FS",
+        "players": [
+          "bal-elias-gantt",
+          "bal-miles-hsu"
+        ]
+      },
+      {
+        "role": "SS",
+        "players": [
+          "bal-tavon-reed",
+          "bal-corey-maddox"
+        ]
+      }
+    ],
+    "special_teams": [
+      {
+        "role": "K",
+        "players": [
+          "bal-mateo-serrano"
+        ]
+      },
+      {
+        "role": "P / Holder",
+        "players": [
+          "bal-grant-lyle"
+        ]
+      },
+      {
+        "role": "LS",
+        "players": [
+          "bal-nolan-pierce"
+        ]
+      },
+      {
+        "role": "KR",
+        "players": [
+          "bal-reece-tatum",
+          "bal-tyrell-givens"
+        ]
+      },
+      {
+        "role": "PR",
+        "players": [
+          "bal-malik-renfro",
+          "bal-reece-tatum"
+        ]
+      }
+    ],
+    "unresolved": [
+      "Damon Kirkland game availability and any resulting inactive-list adjustment."
+    ]
+  },
+  "opponent_scouting": {
+    "schema_version": 1,
+    "scouting_id": "stl-bal-2026-w03",
+    "team_id": "bal",
+    "opponent_team_id": "bal",
+    "franchise_team_id": "stl",
+    "season": 2026,
+    "week": 3,
+    "status": "READY_FOR_FORMAL_FILM_REVIEW",
+    "overall_confidence": "STAFF_SCOUTED",
+    "executive_summary": "Baltimore is a 2-0 veteran contender that wins through assignment discipline, play-action sequencing and a pressure package designed to create protection errors. St. Louis must protect Jalen Knox without becoming predictable and must force Baltimore to play from obvious passing situations.",
+    "key_threats": [
+      {
+        "player_id": "bal-dorian-hale",
+        "priority": "HIGH",
+        "reason": "Punishes static coverage and late communication with anticipatory intermediate throws.",
+        "control_point": "Change the picture after the snap without losing underneath spacing."
+      },
+      {
+        "player_id": "bal-malachi-boone",
+        "priority": "HIGH",
+        "reason": "Keeps Baltimore on schedule and turns wide-zone patience into vertical cuts.",
+        "control_point": "Set firm edges and close the first cutback without over-pursuit."
+      },
+      {
+        "player_id": "bal-kellan-ward",
+        "priority": "HIGH",
+        "reason": "Primary boundary isolation and contested-catch target.",
+        "control_point": "Do not surrender free access; safety help must arrive without advertising the rotation."
+      },
+      {
+        "player_id": "bal-owen-stroud",
+        "priority": "HIGH",
+        "reason": "Hale’s pressure answer and a credible blocker in the same personnel grouping.",
+        "control_point": "Match his release with disciplined leverage and avoid losing him during simulated pressure."
+      },
+      {
+        "player_id": "bal-ronan-vale",
+        "priority": "URGENT",
+        "reason": "Premier edge rusher moved around the formation to attack protection rules.",
+        "control_point": "Identify him every snap, vary chip help and avoid leaving injured quarterback protection to late improvisation."
+      },
+      {
+        "player_id": "bal-leon-vickers",
+        "priority": "HIGH",
+        "reason": "Compresses the interior pocket and enables the edge rush.",
+        "control_point": "Maintain depth and connection inside; do not let the center become isolated repeatedly."
+      },
+      {
+        "player_id": "bal-jace-holloman",
+        "priority": "HIGH",
+        "reason": "Can erase isolated boundary routes and turn late throws into takeaways.",
+        "control_point": "Use formation, motion and route combinations rather than asking one receiver to win static press all afternoon."
+      },
+      {
+        "player_id": "bal-elias-gantt",
+        "priority": "NORMAL",
+        "reason": "Disguises rotation and closes intermediate windows.",
+        "control_point": "Confirm the post-snap safety picture before attacking crossers and seams."
+      }
+    ],
+    "offensive_tendencies": [
+      {
+        "situation": "EARLY_DOWN",
+        "tendency": "Wide zone, duo and split-flow play action from condensed formations.",
+        "confidence": "STAFF_SCOUTED"
+      },
+      {
+        "situation": "THIRD_AND_MEDIUM",
+        "tendency": "Protection identification, Stroud as pressure answer, Ward isolated away from trips.",
+        "confidence": "STAFF_SCOUTED"
+      },
+      {
+        "situation": "RED_ZONE",
+        "tendency": "Heavy personnel, play-action leak concepts and boundary isolation.",
+        "confidence": "STAFF_SCOUTED"
+      },
+      {
+        "situation": "FOUR_MINUTE",
+        "tendency": "Boone behind double teams with Hale controlling the box count.",
+        "confidence": "STAFF_SCOUTED"
+      }
+    ],
+    "defensive_tendencies": [
+      {
+        "situation": "EARLY_DOWN",
+        "tendency": "Odd and mint fronts with quarters structures; safeties trigger aggressively against run action.",
+        "confidence": "STAFF_SCOUTED"
+      },
+      {
+        "situation": "THIRD_DOWN",
+        "tendency": "Double-mug presentations, creepers and simulated pressure with Vale moved to the protection stress point.",
+        "confidence": "STAFF_SCOUTED"
+      },
+      {
+        "situation": "TWO_MINUTE",
+        "tendency": "Match coverage with selective four-man games rather than constant all-out pressure.",
+        "confidence": "STAFF_SCOUTED"
+      },
+      {
+        "situation": "RED_ZONE",
+        "tendency": "Press-man and robber variations that challenge condensed releases.",
+        "confidence": "STAFF_SCOUTED"
+      }
+    ],
+    "matchup_board": [
+      {
+        "matchup": "Jonah Saye and the Archers protection plan vs Ronan Vale",
+        "risk": "CRITICAL",
+        "archers_path": "Use chips, alignment variation, movement launch points and fast answers within Saye’s verified hand protection."
+      },
+      {
+        "matchup": "Archers interior offensive line vs Leon Vickers and Baltimore twist games",
+        "risk": "HIGH",
+        "archers_path": "Prioritize depth, passing off movement and center-guard communication over isolated hero blocks."
+      },
+      {
+        "matchup": "Jalen Knox vs simulated pressure and late safety rotation",
+        "risk": "HIGH",
+        "archers_path": "Reduce avoidable contact through pre-snap ownership, defined hot answers and play designs that do not require extended second reactions."
+      },
+      {
+        "matchup": "Archers corners vs Kellan Ward and Treyson Pike",
+        "risk": "HIGH",
+        "archers_path": "Disrupt release timing and vary safety presentation without compromising run fits."
+      },
+      {
+        "matchup": "Archers linebackers and safeties vs Owen Stroud",
+        "risk": "HIGH",
+        "archers_path": "Carry seams with inside leverage and communicate through split-flow and boot action."
+      },
+      {
+        "matchup": "Baltimore right guard Damon Kirkland vs Archers interior movement",
+        "risk": "OPPORTUNITY",
+        "archers_path": "Prepare as though he plays, then test lateral recovery and communication if the knee limits him."
+      },
+      {
+        "matchup": "Baltimore downhill safeties vs Archers motion and play-action sequencing",
+        "risk": "OPPORTUNITY",
+        "archers_path": "Use motion to reveal rules and create throws behind aggressive run support."
+      }
+    ],
+    "practice_priorities": [
+      {
+        "order": 1,
+        "title": "Protection communication under simulated pressure",
+        "detail": "Rehearse double-mug, creeper and late-rotation identification with explicit ownership between Jalen Knox, the center and backs."
+      },
+      {
+        "order": 2,
+        "title": "Fast-answer passing without exposing Knox",
+        "detail": "Build pressure answers, movement pockets and defined throws that preserve the authorized expected-start plan and verified medical restrictions."
+      },
+      {
+        "order": 3,
+        "title": "Motion and formation declaration",
+        "detail": "Use shifts and motion to force Baltimore to reveal match rules and edge pressure responsibility."
+      },
+      {
+        "order": 4,
+        "title": "Wide-zone and split-flow discipline",
+        "detail": "Defensive front and second level must set edges, close cutbacks and exchange boot responsibility without chasing false flow."
+      },
+      {
+        "order": 5,
+        "title": "Ward and Stroud third-down plan",
+        "detail": "Rehearse bracket and leverage calls with clear answers when Baltimore isolates Ward away from Stroud."
+      },
+      {
+        "order": 6,
+        "title": "Interior rush test against Kirkland",
+        "detail": "Prepare normal calls as though Kirkland plays, with a ready package to test his lateral movement if limitation becomes visible."
+      },
+      {
+        "order": 7,
+        "title": "Field-position discipline",
+        "detail": "Match Baltimore’s coverage standards and avoid gifting short fields to a low-variance opponent."
+      }
+    ],
+    "evidence_boundaries": [
+      "Damon Kirkland’s final game designation is unresolved.",
+      "Baltimore’s Week Three inactive list is not yet established.",
+      "Scouting tendencies are established staff analysis, not foreknowledge of Baltimore’s final game plan.",
+      "No opponent contract terms, guarantees or cap figures are asserted by this package."
+    ],
+    "resource_refs": {
+      "team_identity": "bal-2026",
+      "team_roster": "bal-2026",
+      "team_staff": "bal-2026",
+      "team_depth_chart": "bal-2026-w03"
+    }
+  }
+}

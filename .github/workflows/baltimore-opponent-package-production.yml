@@ -1,0 +1,108 @@
+name: Seed Baltimore Opponent Package Production
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archers-opponent-package-production
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    if: ${{ github.event.head_commit.message == 'RUN BALTIMORE OPPONENT PACKAGE V1 PRODUCTION' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PROJECT_REF: oqbylwlkrabxvpdhugrf
+      ARCHERS_ACTION_KEY: ${{ secrets.ARCHERS_ACTION_KEY }}
+      GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
+    steps:
+      - name: Check out approved source
+        uses: actions/checkout@v4
+
+      - name: Validate credentials and package
+        run: |
+          set -euo pipefail
+          test -n "$ARCHERS_ACTION_KEY" || { echo 'ARCHERS_ACTION_KEY is missing'; exit 1; }
+          node --check phase4-opponent-package.js
+          node --check tests/opponent-package/live-browser.mjs
+          python -m py_compile scripts/seed_baltimore_opponent_package.py
+          python -m pip install --quiet jsonschema==4.26.0
+          python - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+          from pathlib import Path
+          schema = json.loads(Path('schemas/opponent-package-v1/opponent-package-v1.schema.json').read_text(encoding='utf-8'))
+          package = json.loads(Path('data/opponents/bal-2026-w03.json').read_text(encoding='utf-8'))
+          errors = list(Draft202012Validator(schema).iter_errors(package))
+          assert not errors, [error.message for error in errors]
+          PY
+          python tests/opponent-package/static-validation.py
+
+      - name: Seed and verify authoritative Baltimore resources
+        run: python scripts/seed_baltimore_opponent_package.py
+
+      - name: Install Chromium for post-write read-only verification
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Start merged site locally
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/opponent-production-http.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/index-phase3.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/opponent-production-http.log
+          exit 1
+
+      - name: Verify live resources in browser with writes blocked
+        env:
+          OPPONENT_BASE_URL: http://127.0.0.1:4173
+          OPPONENT_EVIDENCE_DIR: opponent-package-production-evidence/browser
+          OPPONENT_USE_LIVE: "true"
+        run: node tests/opponent-package/live-browser.mjs
+
+      - name: Upload production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: baltimore-opponent-package-production-${{ github.run_id }}
+          path: opponent-package-production-evidence
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish non-secret production status
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          RUN_ID_VALUE: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "run_id=$RUN_ID_VALUE"
+            echo "job_status=$JOB_STATUS"
+            echo "source_commit=$GITHUB_SHA"
+            if [ -f opponent-package-production-evidence/production-summary.json ]; then
+              echo "production_summary="
+              cat opponent-package-production-evidence/production-summary.json
+            else
+              echo "production_summary=unavailable"
+            fi
+          } > baltimore-opponent-package-production-status.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B opponent-package-production-report origin/main
+          git add baltimore-opponent-package-production-status.txt
+          git commit -m "Record Baltimore opponent package production status" || true
+          git push origin HEAD:main

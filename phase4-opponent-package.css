@@ -1,0 +1,117 @@
+.opponent-room { margin-top:16px; scroll-margin-top:88px; }
+.opponent-room-head { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom:16px; }
+.opponent-room-head h2 { margin:6px 0 6px; font-size:1.45rem; text-transform:none; letter-spacing:-.02em; color:var(--cream); }
+.opponent-room-head p { margin:0; max-width:850px; }
+.opponent-room-badges { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.opponent-subnav { display:flex; gap:7px; overflow-x:auto; padding:7px; margin-bottom:16px; border:1px solid var(--line); border-radius:14px; background:rgba(5,16,13,.62); }
+.opponent-subnav-button { border:0; border-radius:9px; padding:9px 13px; color:var(--muted); background:transparent; font-weight:850; cursor:pointer; white-space:nowrap; }
+.opponent-subnav-button:hover { color:var(--cream); background:rgba(39,74,64,.3); }
+.opponent-subnav-button.active { color:var(--ink); background:var(--gold); }
+.opponent-view { display:none; }
+.opponent-view.active { display:block; animation:appear .18s ease; }
+.opponent-loading,.opponent-empty { border:1px dashed var(--line); border-radius:14px; padding:22px; color:var(--muted); text-align:center; }
+.opponent-open-button { margin-top:14px; width:100%; }
+.opponent-overview-grid,.opponent-scouting-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.opponent-overview-lower { margin-top:14px; }
+.opponent-card { border:1px solid var(--lineSoft); border-radius:16px; padding:17px; background:linear-gradient(180deg,rgba(15,31,27,.94),rgba(7,20,17,.92)); }
+.opponent-card + .opponent-card { margin-top:0; }
+.opponent-card p { margin:9px 0 0; }
+.opponent-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.opponent-card-heading h3 { color:var(--cream); font-size:1.02rem; }
+.opponent-lead { color:var(--cream)!important; line-height:1.58; }
+.opponent-trait-row,.opponent-player-detail > div,.opponent-tag-groups > div { display:flex; gap:7px; flex-wrap:wrap; margin-top:13px; }
+.opponent-trait-row span,.opponent-player-detail > div span,.opponent-tag-groups span { border:1px solid var(--line); border-radius:999px; padding:5px 8px; color:var(--muted); font-size:.72rem; }
+.opponent-facts { display:grid; gap:8px; margin:16px 0 0; }
+.opponent-facts div { display:grid; grid-template-columns:130px 1fr; gap:12px; padding-top:8px; border-top:1px solid var(--lineSoft); }
+.opponent-facts dt { color:var(--muted); font-size:.78rem; }
+.opponent-facts dd { margin:0; font-weight:750; }
+.opponent-alert { display:grid; gap:5px; padding:13px; border:1px solid rgba(230,185,100,.48); border-radius:12px; background:rgba(230,185,100,.07); }
+.opponent-alert span { color:var(--muted); line-height:1.45; }
+.opponent-roster-counts { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:14px; }
+.opponent-roster-counts div { border:1px solid var(--lineSoft); border-radius:12px; padding:11px; text-align:center; }
+.opponent-roster-counts strong { display:block; font-size:1.35rem; color:var(--gold); }
+.opponent-roster-counts span { color:var(--muted); font-size:.72rem; }
+.opponent-tag-groups { display:grid; gap:9px; margin-top:13px; }
+.opponent-tag-groups > div { align-items:center; margin:0; }
+.opponent-tag-groups b { width:90px; color:var(--gold); font-size:.77rem; }
+.opponent-threat-strip,.opponent-scouting-lead,.opponent-boundary-card { margin-top:14px; }
+.opponent-threat-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:9px; margin-top:14px; }
+.opponent-threat { border:1px solid var(--lineSoft); border-radius:12px; padding:11px; background:rgba(5,16,13,.48); }
+.opponent-threat strong { display:block; margin-top:9px; line-height:1.35; }
+.opponent-threat p { font-size:.82rem; line-height:1.4; }
+.opponent-text-button { border:0; background:transparent; color:var(--gold); font-weight:850; cursor:pointer; }
+.opponent-section-intro { display:flex; justify-content:space-between; gap:16px; align-items:flex-end; margin:2px 0 12px; }
+.opponent-section-intro h3,.opponent-section-intro p { margin:0; }
+.opponent-section-intro p { margin-top:4px; font-size:.84rem; }
+.opponent-section-intro:not(:first-child) { margin-top:20px; }
+.opponent-staff-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.opponent-staff-grid.featured-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.opponent-staff-card { border:1px solid var(--lineSoft); border-radius:14px; padding:15px; background:rgba(5,16,13,.48); }
+.opponent-staff-card.featured { background:linear-gradient(180deg,rgba(39,74,64,.25),rgba(5,16,13,.52)); }
+.opponent-staff-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.opponent-staff-top span:first-child { color:var(--gold); font-size:.66rem; letter-spacing:.08em; }
+.opponent-staff-top h3 { margin:5px 0 2px; }
+.opponent-staff-top b { color:var(--muted); font-size:.82rem; }
+.opponent-staff-card p { font-size:.86rem; line-height:1.48; }
+.opponent-staff-card dl { margin:13px 0 0; display:grid; gap:9px; }
+.opponent-staff-card dl div { border-top:1px solid var(--lineSoft); padding-top:8px; }
+.opponent-staff-card dt { color:var(--gold); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; }
+.opponent-staff-card dd { margin:4px 0 0; color:var(--muted); font-size:.8rem; line-height:1.42; }
+.opponent-depth-layout { display:grid; gap:14px; }
+.opponent-depth-table { min-width:760px; }
+.opponent-depth-table th:first-child,.opponent-depth-table td:first-child { text-align:left; }
+.opponent-depth-table th:nth-child(n+2),.opponent-depth-table td:nth-child(n+2) { text-align:left; }
+.opponent-boundary-card { border-color:rgba(230,185,100,.42); }
+.opponent-boundary-card ul { margin:12px 0 0; padding-left:20px; color:var(--muted); line-height:1.55; }
+.opponent-roster-tools { display:flex; justify-content:space-between; gap:14px; align-items:end; margin-bottom:12px; }
+.opponent-filter-row { display:flex; gap:7px; flex-wrap:wrap; }
+.opponent-filter-row button { border:1px solid var(--line); border-radius:9px; padding:8px 11px; background:rgba(5,16,13,.58); color:var(--muted); font-weight:800; cursor:pointer; }
+.opponent-filter-row button.active { color:var(--ink); background:var(--gold); border-color:var(--gold); }
+.opponent-roster-search { display:grid; gap:4px; min-width:240px; color:var(--muted); font-size:.72rem; }
+.opponent-roster-search input { width:100%; border:1px solid var(--line); border-radius:10px; padding:9px 11px; background:rgba(5,16,13,.75); color:var(--cream); }
+.opponent-roster-summary { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.opponent-roster-summary span { border:1px solid var(--lineSoft); border-radius:999px; padding:6px 9px; color:var(--muted); font-size:.75rem; }
+.opponent-roster-summary strong { color:var(--gold); }
+.opponent-roster-list { display:grid; gap:7px; }
+.opponent-player-row { border:1px solid var(--lineSoft); border-radius:12px; background:rgba(5,16,13,.48); overflow:hidden; }
+.opponent-player-row[hidden] { display:none; }
+.opponent-player-row summary { list-style:none; cursor:pointer; display:grid; grid-template-columns:46px minmax(170px,1.5fr) 70px 70px 80px auto; gap:9px; align-items:center; padding:11px 13px; }
+.opponent-player-row summary::-webkit-details-marker { display:none; }
+.opponent-player-row summary > span:not(.pill):not(.opponent-number) { color:var(--muted); font-size:.82rem; }
+.opponent-number { color:var(--gold); font-weight:900; }
+.opponent-player-detail { padding:0 13px 13px 59px; border-top:1px solid var(--lineSoft); }
+.opponent-player-detail p { margin-top:11px; }
+.opponent-player-detail small { display:block; color:var(--muted); margin-top:10px; }
+.opponent-scouting-grid { margin-top:14px; }
+.opponent-threat-list { display:grid; gap:9px; margin-top:12px; }
+.opponent-threat-list > div,.opponent-matchup-grid > div { border:1px solid var(--lineSoft); border-radius:12px; padding:12px; background:rgba(5,16,13,.48); }
+.opponent-threat-list strong,.opponent-matchup-grid strong { display:block; margin-top:8px; }
+.opponent-threat-list p,.opponent-matchup-grid p { font-size:.84rem; }
+.opponent-threat-list small { color:var(--muted); line-height:1.45; }
+.opponent-priority-list { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:9px; }
+.opponent-priority-list li { display:grid; grid-template-columns:34px 1fr; gap:10px; border:1px solid var(--lineSoft); border-radius:12px; padding:11px; background:rgba(5,16,13,.48); }
+.opponent-priority-list li > span { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; color:var(--ink); background:var(--gold); font-weight:900; }
+.opponent-priority-list p { font-size:.82rem; margin-top:4px; }
+.opponent-matchup-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-top:12px; }
+.opponent-tendency { display:grid; grid-template-columns:125px 1fr auto; gap:10px; align-items:start; padding:10px 0; border-top:1px solid var(--lineSoft); }
+.opponent-tendency:first-of-type { margin-top:10px; }
+.opponent-tendency b { color:var(--gold); font-size:.76rem; }
+.opponent-tendency span { color:var(--cream); font-size:.85rem; line-height:1.42; }
+.opponent-tendency small { color:var(--muted); font-size:.65rem; }
+
+@media (max-width:1100px) {
+  .opponent-threat-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .opponent-staff-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:760px) {
+  .opponent-room-head,.opponent-roster-tools { display:block; }
+  .opponent-room-badges { justify-content:flex-start; margin-top:12px; }
+  .opponent-overview-grid,.opponent-scouting-grid,.opponent-staff-grid,.opponent-staff-grid.featured-grid,.opponent-matchup-grid { grid-template-columns:1fr; }
+  .opponent-threat-grid { grid-template-columns:1fr; }
+  .opponent-roster-search { min-width:0; margin-top:10px; }
+  .opponent-player-row summary { grid-template-columns:42px 1fr auto; }
+  .opponent-player-row summary > :nth-child(3),.opponent-player-row summary > :nth-child(4),.opponent-player-row summary > :nth-child(5) { display:none; }
+  .opponent-player-detail { padding-left:13px; }
+  .opponent-tendency { grid-template-columns:1fr; }
+  .opponent-facts div { grid-template-columns:1fr; }
+}

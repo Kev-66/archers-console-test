@@ -1,0 +1,83 @@
+name: Opponent Package v1 CI
+
+on:
+  push:
+    branches:
+      - agent/baltimore-opponent-package
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Parse source
+        run: |
+          node --check phase4-opponent-package.js
+          node --check tests/opponent-package/live-browser.mjs
+          python -m py_compile tests/opponent-package/static-validation.py scripts/seed_baltimore_opponent_package.py
+
+      - name: Validate package schema and invariants
+        run: |
+          python -m pip install --quiet jsonschema==4.26.0
+          python - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+          from pathlib import Path
+          schema = json.loads(Path('schemas/opponent-package-v1/opponent-package-v1.schema.json').read_text(encoding='utf-8'))
+          package = json.loads(Path('data/opponents/bal-2026-w03.json').read_text(encoding='utf-8'))
+          errors = sorted(Draft202012Validator(schema).iter_errors(package), key=lambda item: list(item.absolute_path))
+          if errors:
+              for error in errors:
+                  print(f"{list(error.absolute_path)}: {error.message}")
+              raise SystemExit(1)
+          print('Opponent package JSON schema passed')
+          PY
+          python tests/opponent-package/static-validation.py
+
+  browser:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Start branch site
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/opponent-http.log 2>&1 &
+          echo $! > /tmp/opponent-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/index-phase3.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/opponent-http.log
+          exit 1
+
+      - name: Validate opponent room with branch fixture
+        env:
+          OPPONENT_BASE_URL: http://127.0.0.1:4173
+          OPPONENT_EVIDENCE_DIR: opponent-browser-evidence
+        run: node tests/opponent-package/live-browser.mjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: opponent-package-browser-${{ github.run_id }}
+          path: opponent-browser-evidence
+          if-no-files-found: warn
+          retention-days: 14

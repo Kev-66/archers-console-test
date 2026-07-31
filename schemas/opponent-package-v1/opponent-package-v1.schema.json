@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/opponent-package-v1.schema.json",
+  "title": "Draft a Dynasty Opponent Package v1",
+  "type": "object",
+  "required": [
+    "package_schema_version",
+    "package_id",
+    "authorized_scope",
+    "team_identity",
+    "team_staff",
+    "team_roster",
+    "team_depth_chart",
+    "opponent_scouting"
+  ],
+  "properties": {
+    "package_schema_version": { "const": 1 },
+    "package_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "authorized_scope": { "const": "FULL_OPPONENT_PACKAGE" },
+    "team_identity": {
+      "type": "object",
+      "required": ["schema_version", "team_id", "team_name", "season", "as_of_week", "record", "general_manager", "head_coach", "offensive_identity", "defensive_identity"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "team_id": { "type": "string", "minLength": 1 },
+        "team_name": { "type": "string", "minLength": 1 },
+        "season": { "type": "integer", "minimum": 2026 },
+        "as_of_week": { "type": "integer", "minimum": 0 },
+        "known_availability": { "type": "array" }
+      },
+      "additionalProperties": true
+    },
+    "team_staff": {
+      "type": "object",
+      "required": ["schema_version", "staff_id", "team_id", "season", "as_of_week", "staff"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "staff_id": { "type": "string", "minLength": 1 },
+        "team_id": { "type": "string", "minLength": 1 },
+        "season": { "type": "integer" },
+        "as_of_week": { "type": "integer" },
+        "staff": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "required": ["staff_id", "name", "job", "department", "profile", "voice", "decision_lens"],
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "team_roster": {
+      "type": "object",
+      "required": ["schema_version", "roster_id", "team_id", "season", "as_of_week", "active_count", "practice_squad_count", "active_roster", "practice_squad"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "roster_id": { "type": "string", "minLength": 1 },
+        "team_id": { "type": "string", "minLength": 1 },
+        "season": { "type": "integer" },
+        "as_of_week": { "type": "integer" },
+        "active_count": { "const": 53 },
+        "practice_squad_count": { "const": 16 },
+        "active_roster": {
+          "type": "array",
+          "minItems": 53,
+          "maxItems": 53,
+          "items": { "$ref": "#/$defs/player" }
+        },
+        "practice_squad": {
+          "type": "array",
+          "minItems": 16,
+          "maxItems": 16,
+          "items": { "$ref": "#/$defs/player" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "team_depth_chart": {
+      "type": "object",
+      "required": ["schema_version", "depth_chart_id", "team_id", "season", "week", "offense", "defense", "special_teams", "unresolved"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "week": { "type": "integer", "minimum": 0 },
+        "offense": { "type": "array", "minItems": 10 },
+        "defense": { "type": "array", "minItems": 10 },
+        "special_teams": { "type": "array", "minItems": 3 },
+        "unresolved": { "type": "array" }
+      },
+      "additionalProperties": true
+    },
+    "opponent_scouting": {
+      "type": "object",
+      "required": ["schema_version", "scouting_id", "team_id", "franchise_team_id", "season", "week", "status", "executive_summary", "key_threats", "matchup_board", "practice_priorities", "evidence_boundaries"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "key_threats": { "type": "array", "minItems": 5 },
+        "matchup_board": { "type": "array", "minItems": 5 },
+        "practice_priorities": { "type": "array", "minItems": 5 },
+        "evidence_boundaries": { "type": "array", "minItems": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "player": {
+      "type": "object",
+      "required": ["player_id", "player_name", "team_id", "position", "age", "overall_rating", "development_trait", "role", "unit", "roster_status", "availability", "football_notes"],
+      "properties": {
+        "player_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+        "player_name": { "type": "string", "minLength": 1 },
+        "team_id": { "const": "bal" },
+        "age": { "type": "integer", "minimum": 18, "maximum": 50 },
+        "overall_rating": { "type": "integer", "minimum": 40, "maximum": 99 },
+        "development_trait": { "enum": ["NORMAL", "HIDDEN", "STAR", "SUPERSTAR", "XFACTOR"] },
+        "role": { "enum": ["DEPTH", "ROTATION", "STARTER", "PREMIUM"] },
+        "unit": { "enum": ["OFFENSE", "DEFENSE", "SPECIAL_TEAMS"] },
+        "roster_status": { "enum": ["ACTIVE_ROSTER", "PRACTICE_SQUAD"] },
+        "availability": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
