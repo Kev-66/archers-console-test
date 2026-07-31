@@ -1,0 +1,67 @@
+name: Verify Weekly Gameplan Lab Production
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out verification source
+        uses: actions/checkout@v4
+
+      - name: Install Chromium validation dependencies
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Verify hosted read-only console
+        env:
+          GAMEPLAN_BASE_URL: https://kev-66.github.io/archers-console-test
+          GAMEPLAN_EVIDENCE_DIR: production-gameplan-evidence
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            rm -rf "$GAMEPLAN_EVIDENCE_DIR"
+            if node tests/weekly-gameplan-lab-lite/gameplan-lab-live-browser.mjs; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 18 ]; then
+              echo "Hosted console did not pass production verification."
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Validate production evidence
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          evidence = json.loads(Path("production-gameplan-evidence/verification.json").read_text(encoding="utf-8"))
+          assert evidence["appVersion"] == "4.3.0-weekly-gameplan-lab-lite-v1", evidence
+          assert evidence["stateVersion"] == 38, evidence
+          assert evidence["week"] == 3, evidence
+          assert "Baltimore" in evidence["opponent"], evidence
+          assert evidence["activeRosterCount"] == 53, evidence
+          assert evidence["missingOpponentResources"] == [], evidence
+          assert evidence["blockedWrites"] == [], evidence
+          assert evidence["consoleErrors"] == [], evidence
+          assert evidence["pageErrors"] == [], evidence
+          print(json.dumps(evidence, indent=2))
+          PY
+
+      - name: Upload production verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-gameplan-lab-production-verification
+          path: production-gameplan-evidence
+          if-no-files-found: warn
+          retention-days: 14
