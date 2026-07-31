@@ -1,0 +1,71 @@
+name: Weekly Gameplan Lab Lite v1 CI
+
+on:
+  push:
+    branches:
+      - feature/weekly-gameplan-lab-lite-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Parse Gameplan Lab JavaScript
+        run: |
+          node --check phase4-weekly-gameplan-lab-lite.js
+          node --check tests/weekly-gameplan-lab-lite/gameplan-lab-dom-smoke.js
+          node --check tests/weekly-gameplan-lab-lite/gameplan-lab-live-browser.mjs
+      - name: Run Gameplan Lab static validation
+        run: python tests/weekly-gameplan-lab-lite/gameplan-lab-v1-static.py
+      - name: Run existing console static regressions
+        run: |
+          python tests/portal/portal-v1-static.py
+          python tests/opponent-package/static-validation.py
+          python tests/squad-planner/squad-planner-v1-static.py
+          python tests/recruitment-market-desk/market-desk-v1-static.py
+      - name: Run Gameplan Lab DOM smoke test
+        run: |
+          npm install --no-save jsdom@24.1.3
+          node tests/weekly-gameplan-lab-lite/gameplan-lab-dom-smoke.js
+
+  live-browser:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install Chromium validation dependencies
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+      - name: Start branch console server
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/gameplan-lab-http.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/index-phase3.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/gameplan-lab-http.log
+          exit 1
+      - name: Run live read-only Gameplan Lab validation
+        env:
+          GAMEPLAN_BASE_URL: http://127.0.0.1:4173
+          GAMEPLAN_EVIDENCE_DIR: gameplan-lab-browser-evidence
+        run: node tests/weekly-gameplan-lab-lite/gameplan-lab-live-browser.mjs
+      - name: Upload Gameplan Lab browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-gameplan-lab-browser
+          path: gameplan-lab-browser-evidence
+          if-no-files-found: warn
+          retention-days: 14

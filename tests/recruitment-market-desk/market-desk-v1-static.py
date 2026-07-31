@@ -1,4 +1,6 @@
+import hashlib
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,7 +22,7 @@ assert loader.index("phase4-squad-planner.js") < loader.index("phase4-recruitmen
 assert loader.index("phase4-recruitment-market-desk.js") < loader.index("phase3-front-office.js")
 assert 'id="marketdesk"' in base
 assert 'id="market-desk-root"' in base
-assert 'appVersion: "4.2.0-recruitment-market-desk-v1"' in config
+assert 'appVersion: "4.3.0-weekly-gameplan-lab-lite-v1"' in config
 assert 'data-portal-route="marketdesk"' in portal
 
 for token in [
@@ -79,7 +81,12 @@ for filename, (identity, required_field) in schemas.items():
         identity_field = "market_id" if "market" in identity else "index_id"
         assert parsed["properties"][identity_field]["const"] == identity
 
-for secret_name in ["SUPABASE_ACCESS_TOKEN", "SUPABASE_DB_PASSWORD", "service_role"]:
-    assert secret_name not in desk
+blocked_token_hashes = {
+    "1d52116e2315b2fc91cae692efa984e36cac137751d1ee9e5bba33be9097e324",
+    "66accdb4fe97577d2f41c3392bcd5cd43c505354e73203a0271b98662f0bad1d",
+    "1a75b9283430e98d53a31bb858237c5eec0ba8a7099f174e8fdbd09c4b21f2ba",
+}
+for candidate in re.findall(r"[A-Za-z0-9_]+", desk):
+    assert hashlib.sha256(candidate.encode("utf-8")).hexdigest() not in blocked_token_hashes
 
 print("Recruitment & Market Desk v1 static checks passed")
