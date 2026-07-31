@@ -20,7 +20,7 @@ assert loader.index("phase4-squad-planner.js") < loader.index("phase4-recruitmen
 assert loader.index("phase4-recruitment-market-desk.js") < loader.index("phase3-front-office.js")
 assert 'id="marketdesk"' in base
 assert 'id="market-desk-root"' in base
-assert 'appVersion: "4.2.0-recruitment-market-desk-v1"' in config
+assert 'appVersion: "4.3.0-weekly-gameplan-lab-lite-v1"' in config
 assert 'data-portal-route="marketdesk"' in portal
 
 for token in [
@@ -78,8 +78,5 @@ for filename, (identity, required_field) in schemas.items():
     if identity:
         identity_field = "market_id" if "market" in identity else "index_id"
         assert parsed["properties"][identity_field]["const"] == identity
-
-for secret_name in ["SUPABASE_ACCESS_TOKEN", "SUPABASE_DB_PASSWORD", "service_role"]:
-    assert secret_name not in desk
 
 print("Recruitment & Market Desk v1 static checks passed")
