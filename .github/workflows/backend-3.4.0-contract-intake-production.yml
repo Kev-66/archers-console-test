@@ -38,6 +38,7 @@ jobs:
           grep -q 'const BACKEND_VERSION = "3.4.0";' archers-franchise-index-v3.4.0.ts
           grep -q '"validate_contract_intake"' archers-franchise-index-v3.4.0.ts
           grep -q 'create or replace function public.archers_contract_intake_evaluate_v1' phase3-4-contract-intake-guard-v1.sql
+          grep -q 'resource_id has an unsupported format' phase3-4-contract-intake-guard-v1-identifier-patch.sql
           grep -q 'invalid-write self-test' phase3-4-contract-intake-guard-v1-self-test.sql
           test -f scripts/verify_backend_3_4_0_contract_intake_production.py
 
@@ -69,6 +70,8 @@ jobs:
           SQL
             cp ../phase3-4-contract-intake-guard-v1.sql \
               supabase/migrations/20260731005000_contract_intake_guard_v1.sql
+            cp ../phase3-4-contract-intake-guard-v1-identifier-patch.sql \
+              supabase/migrations/20260731005200_contract_intake_guard_v1_identifier_patch.sql
 
             cp ../archers-franchise-index-v3.4.0.ts \
               "supabase/functions/$FUNCTION_NAME/index.ts"

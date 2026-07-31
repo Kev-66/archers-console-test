@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - agent/contract-intake-guard-v1
+      - agent/contract-intake-identifier-hotfix
   pull_request:
     branches:
       - main
@@ -62,11 +63,17 @@ jobs:
       - name: Apply Contract Intake Guard v1 migration
         run: psql -f phase3-4-contract-intake-guard-v1.sql
 
+      - name: Apply Contract Intake Guard identifier patch
+        run: psql -f phase3-4-contract-intake-guard-v1-identifier-patch.sql
+
       - name: Run Contract Intake Guard installation self-test
         run: psql -f phase3-4-contract-intake-guard-v1-self-test.sql
 
       - name: Run Contract Intake Guard regressions
         run: psql -f tests/backend-3.4.0/contract-intake-guard-v1.sql
+
+      - name: Run Contract Intake Guard identifier regressions
+        run: psql -f tests/backend-3.4.0/contract-intake-identifier-hotfix.sql
 
       - name: Verify generated Edge sources
         run: |
@@ -135,8 +142,10 @@ jobs:
           envelope = json.loads(Path("schemas/contract-intake-guard-v1/intake-envelope-v1.schema.json").read_text(encoding="utf-8"))
           design = Path("CONTRACT_INTAKE_GUARD_V1_DESIGN.md").read_text(encoding="utf-8")
           migration = Path("phase3-4-contract-intake-guard-v1.sql").read_text(encoding="utf-8")
+          identifier_patch = Path("phase3-4-contract-intake-guard-v1-identifier-patch.sql").read_text(encoding="utf-8")
           self_test = Path("phase3-4-contract-intake-guard-v1-self-test.sql").read_text(encoding="utf-8")
           regressions = Path("tests/backend-3.4.0/contract-intake-guard-v1.sql").read_text(encoding="utf-8")
+          identifier_regressions = Path("tests/backend-3.4.0/contract-intake-identifier-hotfix.sql").read_text(encoding="utf-8")
           league = Path("DAD_LEAGUE_AND_RESOURCE_RULES.md").read_text(encoding="utf-8")
 
           assert envelope["$id"].endswith("intake-envelope-v1.schema.json")
@@ -166,10 +175,14 @@ jobs:
           ]:
               assert token in migration, token
 
+          assert "resource_id has an unsupported format" in identifier_patch
+          assert "resource_type has an unsupported format" in identifier_patch
+
           for token in [
               "invalid-write self-test",
               "writes_performed",
               "left a resource behind",
+              "contract-intake-guard-valid-self-test",
           ]:
               assert token in self_test, token
 
@@ -186,6 +199,8 @@ jobs:
           ]:
               assert token.lower() in regressions.lower(), token
 
+          assert "invalid preview resource ID unexpectedly succeeded" in identifier_regressions
+          assert "valid preview resource ID was rejected" in identifier_regressions
           assert "## 14. Contract intake guard" in league
           assert "Never submit only a display string" in league
           print("Contract Intake Guard v1 schema and documentation validation passed")
