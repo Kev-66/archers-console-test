@@ -115,7 +115,7 @@ jobs:
           internal_code = re.search(r"\b(?:vs|at) [a-z0-9._:-]{2,5}\b", calendar)
           assert internal_code is None, f"Internal team ID remained in calendar: {internal_code.group(0)}"
           route_sweep = json.loads(Path("portal-browser-evidence/portal-route-sweep.json").read_text(encoding="utf-8"))
-          assert len(route_sweep["results"]) == 8
+          assert len(route_sweep["results"]) == 9
           assert route_sweep["blockedWrites"] == []
           print("Portal calendar and operations-room route sweep passed")
           PY

@@ -2,7 +2,7 @@
   const existing = window.ArchersApp ?? {};
   const config = Object.freeze({
     appName: "St. Louis Archers Franchise Console",
-    appVersion: "4.1.0-squad-planner-v1",
+    appVersion: "4.2.0-recruitment-market-desk-v1",
     supabaseUrl: "https://oqbylwlkrabxvpdhugrf.supabase.co",
     supabasePublishableKey: "sb_publishable_z-EjW-S0x7GZH2VREEaXAw_NOOrbH-m",
     franchiseId: "stl-2026",

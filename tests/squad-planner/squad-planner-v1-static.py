@@ -14,7 +14,7 @@ for asset in ["phase4-squad-planner.css", "phase4-squad-planner.js"]:
 assert loader.index("phase3-roster-drawer.js") < loader.index("phase4-squad-planner.js")
 assert 'id="squadplanner"' in base
 assert 'id="squad-planner-root"' in base
-assert 'appVersion: "4.1.0-squad-planner-v1"' in config
+assert 'appVersion: "4.2.0-recruitment-market-desk-v1"' in config
 
 for token in [
     "Squad Planner",
