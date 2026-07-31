@@ -65,7 +65,7 @@ for compatibility_id in [
     "cap",
     "overviewCentral",
 ]:
-    assert f'id=\\"{compatibility_id}\\"' in portal, compatibility_id
+    assert f'id="{compatibility_id}"' in portal, compatibility_id
 
 assert 'new Set(["OPEN", "READY_FOR_REVIEW", "AWAITING_KEVIN", "BLOCKED"])' in portal
 assert '"DEFERRED"' not in portal.split("ACTIVE_DECISION_STATUSES", 1)[1].split(";", 1)[0]
