@@ -43,9 +43,9 @@ jobs:
           ]
           for item in required_base_ids:
               assert f'getElementById("{item}")' in base or f'id="{item}"' in base, item
-              assert f'id=\\"{item}\\"' in portal, item
+              assert f'id="{item}"' in portal, item
 
-          assert 'data-tab=\\"overview\\"' in portal
+          assert 'data-tab="overview"' in portal
           assert 'overviewButton.textContent = "Portal"' in portal
           print("Base-console compatibility anchors passed")
           PY
