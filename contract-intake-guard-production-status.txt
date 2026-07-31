@@ -1,0 +1,4 @@
+run_id=30594701661
+job_status=failure
+source_commit=09110063cf6b2ca353d7d7222076860aea0525bc
+deployment_summary=unavailable
