@@ -1,0 +1,64 @@
+name: Materialize Backend 3.4.0 Contract Intake
+
+on:
+  push:
+    branches:
+      - agent/contract-intake-guard-v1
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: ${{ github.event.head_commit.message == 'MATERIALIZE BACKEND 3.4.0 CONTRACT INTAKE' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+
+      - name: Generate Backend 3.4.0 sources and knowledge
+        run: |
+          set -euo pipefail
+          python scripts/build_backend_3_4_0_contract_intake.py
+          python scripts/update_contract_intake_knowledge.py
+
+      - name: Verify generated sources
+        run: |
+          set -euo pipefail
+          cmp archers-franchise-index-v3.4.0.ts edge-function-archers-franchise.ts
+          grep -q 'const BACKEND_VERSION = "3.4.0";' archers-franchise-index-v3.4.0.ts
+          grep -q 'validate_contract_intake' archers-franchise-index-v3.4.0.ts
+          grep -q '## 14. Contract intake guard' DAD_LEAGUE_AND_RESOURCE_RULES.md
+
+      - name: Parse generated TypeScript
+        run: |
+          npm install --no-save typescript@5.9.2
+          node - <<'NODE'
+          const fs = require("fs");
+          const ts = require("typescript");
+          const source = fs.readFileSync("archers-franchise-index-v3.4.0.ts", "utf8");
+          const result = ts.transpileModule(source, {
+            compilerOptions: {
+              target: ts.ScriptTarget.ES2022,
+              module: ts.ModuleKind.ESNext,
+            },
+            reportDiagnostics: true,
+          });
+          const diagnostics = result.diagnostics || [];
+          if (diagnostics.length) {
+            for (const diagnostic of diagnostics) {
+              console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
+            }
+            process.exit(1);
+          }
+          console.log("TypeScript parser diagnostics: 0");
+          NODE
+
+      - name: Commit generated files
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add archers-franchise-index-v3.4.0.ts edge-function-archers-franchise.ts DAD_LEAGUE_AND_RESOURCE_RULES.md
+          git commit -m "Materialize Backend 3.4.0 contract intake sources"
+          git push origin HEAD:agent/contract-intake-guard-v1
