@@ -1,0 +1,51 @@
+name: Archers Portal v1 CI
+
+on:
+  push:
+    branches:
+      - agent/archers-portal-app-foundation
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Parse Portal JavaScript
+        run: |
+          node --check archers-app-config.js
+          node --check phase4-archers-portal.js
+
+      - name: Run Portal static regressions
+        run: python tests/portal/portal-v1-static.py
+
+      - name: Verify base console compatibility anchors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          base = Path("index-phase2.html").read_text(encoding="utf-8")
+          portal = Path("phase4-archers-portal.js").read_text(encoding="utf-8")
+
+          required_base_ids = [
+              "record", "standing", "week", "day", "opponent", "kickoff",
+              "version", "updated", "continuation", "decisions",
+              "overviewMedical", "kevinLock", "dialogueRule", "constitution",
+              "operationsManual", "archivedBible", "checkpoint", "seal",
+              "bow", "standard", "term", "cap", "overviewCentral"
+          ]
+          for item in required_base_ids:
+              assert f'getElementById("{item}")' in base or f'id="{item}"' in base, item
+              assert f'id=\\"{item}\\"' in portal, item
+
+          assert 'data-tab=\\"overview\\"' in portal
+          assert 'overviewButton.textContent = "Portal"' in portal
+          print("Base-console compatibility anchors passed")
+          PY
