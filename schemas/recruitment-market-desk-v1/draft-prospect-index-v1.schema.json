@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/draft-prospect-index-v1.schema.json",
+  "title": "Draft a Dynasty Draft Prospect Index v1",
+  "type": "object",
+  "required": ["profile_schema_version", "index_id", "draft_class", "as_of_week", "prospects"],
+  "properties": {
+    "profile_schema_version": { "const": 1 },
+    "index_id": { "const": "draft-prospect-index" },
+    "draft_class": { "type": ["string", "integer", "null"] },
+    "as_of_week": { "type": ["integer", "null"], "minimum": 0 },
+    "review_after_week": { "type": ["integer", "null"], "minimum": 0 },
+    "prospects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["prospect_id", "player_name", "position", "evidence"],
+        "properties": {
+          "prospect_id": { "type": "string", "minLength": 1 },
+          "player_name": { "type": "string", "minLength": 1 },
+          "position": { "type": "string", "minLength": 1 },
+          "school": { "type": ["string", "null"] },
+          "class_year": { "type": ["string", "null"] },
+          "overall_grade": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+          "projected_range": { "type": ["string", "null"] },
+          "development_trait": { "type": ["string", "null"] },
+          "role_projection": { "type": ["string", "null"] },
+          "traits": { "type": "array", "items": { "type": "string" } },
+          "football_notes": { "type": ["string", "null"] },
+          "evidence": {
+            "enum": ["MODEL_INFERENCE", "PUBLIC_REPORT", "STAFF_SCOUTED", "TEAM_CONTACT", "VERIFIED"]
+          },
+          "source": { "type": ["string", "null"] },
+          "as_of_week": { "type": ["integer", "null"], "minimum": 0 },
+          "review_after_week": { "type": ["integer", "null"], "minimum": 0 }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

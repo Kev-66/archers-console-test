@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/scouting-report-v1.schema.json",
+  "title": "Draft a Dynasty Scouting Report v1",
+  "type": "object",
+  "required": ["profile_schema_version", "report_id", "subject_type", "subject_id", "evidence", "as_of_week"],
+  "properties": {
+    "profile_schema_version": { "const": 1 },
+    "report_id": { "type": "string", "minLength": 1 },
+    "subject_type": { "enum": ["FREE_AGENT", "TRADE_TARGET", "DRAFT_PROSPECT"] },
+    "subject_id": { "type": "string", "minLength": 1 },
+    "summary": { "type": ["string", "null"] },
+    "strengths": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "role_projection": { "type": ["string", "null"] },
+    "evidence": {
+      "enum": ["MODEL_INFERENCE", "PUBLIC_REPORT", "STAFF_SCOUTED", "TEAM_CONTACT", "VERIFIED"]
+    },
+    "source": { "type": ["string", "null"] },
+    "as_of_week": { "type": ["integer", "null"], "minimum": 0 },
+    "review_after_week": { "type": ["integer", "null"], "minimum": 0 }
+  },
+  "additionalProperties": true
+}
