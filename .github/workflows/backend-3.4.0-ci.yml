@@ -62,6 +62,9 @@ jobs:
       - name: Apply Contract Intake Guard v1 migration
         run: psql -f phase3-4-contract-intake-guard-v1.sql
 
+      - name: Run Contract Intake Guard installation self-test
+        run: psql -f phase3-4-contract-intake-guard-v1-self-test.sql
+
       - name: Run Contract Intake Guard regressions
         run: psql -f tests/backend-3.4.0/contract-intake-guard-v1.sql
 
@@ -132,6 +135,7 @@ jobs:
           envelope = json.loads(Path("schemas/contract-intake-guard-v1/intake-envelope-v1.schema.json").read_text(encoding="utf-8"))
           design = Path("CONTRACT_INTAKE_GUARD_V1_DESIGN.md").read_text(encoding="utf-8")
           migration = Path("phase3-4-contract-intake-guard-v1.sql").read_text(encoding="utf-8")
+          self_test = Path("phase3-4-contract-intake-guard-v1-self-test.sql").read_text(encoding="utf-8")
           regressions = Path("tests/backend-3.4.0/contract-intake-guard-v1.sql").read_text(encoding="utf-8")
           league = Path("DAD_LEAGUE_AND_RESOURCE_RULES.md").read_text(encoding="utf-8")
 
@@ -161,6 +165,13 @@ jobs:
               "GUARANTEE_EXCEEDS_SALARY",
           ]:
               assert token in migration, token
+
+          for token in [
+              "invalid-write self-test",
+              "writes_performed",
+              "left a resource behind",
+          ]:
+              assert token in self_test, token
 
           for token in [
               "validation RPC wrote a resource",
