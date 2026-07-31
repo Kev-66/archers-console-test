@@ -1,0 +1,40 @@
+name: Materialize Contract Intake Identifier Hotfix
+
+on:
+  push:
+    branches:
+      - agent/contract-intake-identifier-hotfix
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: ${{ github.event.head_commit.message == 'MATERIALIZE CONTRACT INTAKE IDENTIFIER HOTFIX' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out hotfix branch
+        uses: actions/checkout@v4
+
+      - name: Apply identifier hotfix
+        run: |
+          set -euo pipefail
+          python scripts/apply_contract_intake_identifier_hotfix.py
+
+      - name: Verify hotfix materialization
+        run: |
+          set -euo pipefail
+          grep -q 'contract-intake-valid-{RUN_ID}' scripts/verify_backend_3_4_0_contract_intake_production.py
+          grep -q 'Apply Contract Intake Guard identifier patch' .github/workflows/backend-3.4.0-ci.yml
+          grep -q '20260731005200_contract_intake_guard_v1_identifier_patch.sql' .github/workflows/backend-3.4.0-contract-intake-production.yml
+
+      - name: Commit materialized hotfix
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/verify_backend_3_4_0_contract_intake_production.py \
+            .github/workflows/backend-3.4.0-ci.yml \
+            .github/workflows/backend-3.4.0-contract-intake-production.yml
+          git commit -m "Materialize Contract Intake Guard identifier hotfix"
+          git push origin HEAD:agent/contract-intake-identifier-hotfix
