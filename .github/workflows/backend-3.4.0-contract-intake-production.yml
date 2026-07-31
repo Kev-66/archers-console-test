@@ -1,0 +1,205 @@
+name: Deploy Backend 3.4.0 Contract Intake Production
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archers-backend-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event.head_commit.message == 'RUN BACKEND 3.4.0 CONTRACT INTAKE PRODUCTION' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PROJECT_REF: oqbylwlkrabxvpdhugrf
+      FUNCTION_NAME: archers-franchise
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      ARCHERS_ACTION_KEY: ${{ secrets.ARCHERS_ACTION_KEY }}
+    steps:
+      - name: Check out production source
+        uses: actions/checkout@v4
+
+      - name: Validate credentials and Backend 3.4.0 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo 'SUPABASE_ACCESS_TOKEN is missing'; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo 'SUPABASE_DB_PASSWORD is missing'; exit 1; }
+          test -n "$ARCHERS_ACTION_KEY" || { echo 'ARCHERS_ACTION_KEY is missing'; exit 1; }
+          cmp --silent archers-franchise-index-v3.4.0.ts edge-function-archers-franchise.ts
+          grep -q 'const BACKEND_VERSION = "3.4.0";' archers-franchise-index-v3.4.0.ts
+          grep -q '"validate_contract_intake"' archers-franchise-index-v3.4.0.ts
+          grep -q 'create or replace function public.archers_contract_intake_evaluate_v1' phase3-4-contract-intake-guard-v1.sql
+          grep -q 'invalid-write self-test' phase3-4-contract-intake-guard-v1-self-test.sql
+          test -f scripts/verify_backend_3_4_0_contract_intake_production.py
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Prepare isolated deployment workspaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf deploy-work backup-work evidence
+          mkdir -p deploy-work backup-work evidence
+
+          (
+            cd deploy-work
+            supabase init --force
+            mkdir -p supabase/migrations "supabase/functions/$FUNCTION_NAME"
+
+            cp ../phase3-3-season-rollover-v1.sql \
+              supabase/migrations/20260730210000_backend_3_3_0_season_rollover.sql
+            cp ../phase3-3-contract-normalization-v1.sql \
+              supabase/migrations/20260730234000_contract_normalization_v1_function.sql
+            cat > supabase/migrations/20260730234100_contract_normalization_v1_execute.sql <<'SQL'
+          -- Historical migration anchor. The one-time Contract Normalization v1
+          -- execution was applied and verified in production on July 30, 2026.
+          select 1;
+          SQL
+            cp ../phase3-4-contract-intake-guard-v1.sql \
+              supabase/migrations/20260731005000_contract_intake_guard_v1.sql
+            cp ../phase3-4-contract-intake-guard-v1-self-test.sql \
+              supabase/migrations/20260731005100_contract_intake_guard_v1_self_test.sql
+
+            cp ../archers-franchise-index-v3.4.0.ts \
+              "supabase/functions/$FUNCTION_NAME/index.ts"
+            cat >> supabase/config.toml <<'TOML'
+
+          [functions.archers-franchise]
+          verify_jwt = false
+          TOML
+          )
+
+          (
+            cd backup-work
+            supabase init --force
+          )
+
+          cat > evidence/contract-intake-guard-rollback.sql <<'SQL'
+          begin;
+          drop trigger if exists archers_contract_intake_deferred_check_v1 on public.archers_resources;
+          drop trigger if exists archers_contract_intake_before_write_v1 on public.archers_resources;
+          drop function if exists public.archers_contract_intake_deferred_check_v1();
+          drop function if exists public.archers_contract_intake_before_write_v1();
+          drop function if exists public.archers_validate_contract_intake(text, text, jsonb, integer);
+          drop function if exists public.archers_contract_intake_evaluate_v1(text, text, integer, text, jsonb, integer, boolean);
+          commit;
+          SQL
+
+      - name: Link production database
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Back up current public schema and Edge Function
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd deploy-work
+            supabase db dump --linked --password "$SUPABASE_DB_PASSWORD" --schema public \
+              --file ../evidence/pre-contract-intake-public-schema.sql
+          )
+          (
+            cd backup-work
+            supabase functions download "$FUNCTION_NAME" --project-ref "$PROJECT_REF" --use-api
+          )
+          tar -czf evidence/pre-contract-intake-edge-function.tar.gz \
+            -C backup-work "supabase/functions/$FUNCTION_NAME"
+
+      - name: Preview Contract Intake Guard migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --dry-run --include-all \
+            | tee ../evidence/db-push-dry-run.txt
+
+      - name: Apply Contract Intake Guard and installation self-test
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase db push --linked --password "$SUPABASE_DB_PASSWORD" --include-all --yes \
+            | tee ../evidence/db-push-result.txt
+
+      - name: Deploy Backend 3.4.0 Edge Function
+        id: deploy_edge
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-work
+          supabase functions deploy "$FUNCTION_NAME" --project-ref "$PROJECT_REF" \
+            --no-verify-jwt --use-api | tee ../evidence/edge-deploy-result.txt
+
+      - name: Verify every current contract and run no-write live checks
+        shell: bash
+        env:
+          GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python scripts/verify_backend_3_4_0_contract_intake_production.py
+
+      - name: Restore prior Edge Function if post-deploy validation fails
+        if: ${{ failure() && steps.deploy_edge.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "backup-work/supabase/functions/$FUNCTION_NAME/index.ts" ]; then
+            cd backup-work
+            supabase functions deploy "$FUNCTION_NAME" --project-ref "$PROJECT_REF" \
+              --no-verify-jwt --use-api
+          else
+            echo 'Prior Edge source backup was not found; automatic restore could not run.'
+            exit 1
+          fi
+
+      - name: Preserve deployment evidence and backups
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-3.4.0-contract-intake-production-${{ github.run_id }}
+          path: evidence
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish non-secret Contract Intake Guard status
+        if: always()
+        shell: bash
+        env:
+          DEPLOYMENT_JOB_STATUS: ${{ job.status }}
+          DEPLOYMENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "run_id=$DEPLOYMENT_RUN_ID"
+            echo "job_status=$DEPLOYMENT_JOB_STATUS"
+            echo "source_commit=$GITHUB_SHA"
+            if [ -f evidence/deployment-summary.json ]; then
+              echo "deployment_summary="
+              cat evidence/deployment-summary.json
+            else
+              echo "deployment_summary=unavailable"
+            fi
+          } > contract-intake-guard-production-status.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B contract-intake-deployment-report origin/main
+          git add contract-intake-guard-production-status.txt
+          git commit -m "Record Backend 3.4.0 Contract Intake Guard production status" || true
+          git push origin HEAD:main
