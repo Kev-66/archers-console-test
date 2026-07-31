@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://draft-a-dynasty.local/schemas/contract-intake-guard-v1/intake-envelope-v1.schema.json",
+  "title": "Contract Intake Guard v1 Envelope",
+  "type": "object",
+  "required": ["data"],
+  "properties": {
+    "season": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2999
+    },
+    "status": {
+      "type": "string"
+    },
+    "visibility": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "contract": {
+          "$ref": "../../season-rollover-v1/contract-v1.schema.json"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

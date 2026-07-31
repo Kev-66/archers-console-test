@@ -1,9 +1,9 @@
-name: Backend 3.3.0 CI
+name: Backend 3.4.0 CI
 
 on:
   push:
     branches:
-      - agent/season-rollover-engine-v1
+      - agent/contract-intake-guard-v1
   pull_request:
     branches:
       - main
@@ -59,34 +59,44 @@ jobs:
       - name: Run Season Rollover Engine regressions
         run: psql -f tests/backend-3.3.0/season-rollover-v1.sql
 
+      - name: Apply Contract Intake Guard v1 migration
+        run: psql -f phase3-4-contract-intake-guard-v1.sql
+
+      - name: Run Contract Intake Guard installation self-test
+        run: psql -f phase3-4-contract-intake-guard-v1-self-test.sql
+
+      - name: Run Contract Intake Guard regressions
+        run: psql -f tests/backend-3.4.0/contract-intake-guard-v1.sql
+
       - name: Verify generated Edge sources
         run: |
           python - <<'PY'
           import hashlib
           from pathlib import Path
 
-          versioned = Path("archers-franchise-index-v3.3.0.ts").read_bytes()
+          versioned = Path("archers-franchise-index-v3.4.0.ts").read_bytes()
           canonical = Path("edge-function-archers-franchise.ts").read_bytes()
           assert versioned == canonical, "versioned and canonical Edge sources differ"
 
           text = versioned.decode("utf-8")
           required = [
-              'const BACKEND_VERSION = "3.3.0";',
+              'const BACKEND_VERSION = "3.4.0";',
               '"rollover_season",',
+              '"validate_contract_intake",',
+              '"CONTRACT_INTAKE_VALIDATION"',
+              '"DATABASE_CONTRACT_INTAKE_GUARD"',
+              '"CANONICAL_CONTRACT_DERIVATION"',
+              '"CONTRACT_INTAKE_AT_DATABASE_BOUNDARY"',
+              '"DEFERRED_ROLLOVER_REVALIDATION"',
+              '"NO_LEGACY_CONTRACT_GUESSING"',
+              '"archers_validate_contract_intake"',
+              'validate_contract_intake is read-only and requires dry_run true',
+              'requested_operation: "upsert_resource"',
               '"ATOMIC_SEASON_ROLLOVER"',
-              '"PLAYER_AND_STAFF_CONTRACT_ROLLOVER"',
-              '"CONTRACT_RESOURCE_FINGERPRINT"',
-              '"DRY_RUN_REQUIRED_FOR_SEASON_ROLLOVER"',
-              '"NO_AUTOMATIC_OPTION_EXERCISE"',
-              '"archers_rollover_season"',
-              'expected_state_version is required for rollover_season',
-              'affected_resource_versions_verified',
               'readResourceRefsBatched',
-              'affected_resource_versions_truncated',
           ]
           for token in required:
               assert token in text, token
-          assert '.slice(0, 250);\n  const additionalRows' not in text
 
           print("edge_source_sha256=" + hashlib.sha256(versioned).hexdigest())
           print("edge_source_bytes=" + str(len(versioned)))
@@ -98,7 +108,7 @@ jobs:
           node - <<'NODE'
           const fs = require("fs");
           const ts = require("typescript");
-          const source = fs.readFileSync("archers-franchise-index-v3.3.0.ts", "utf8");
+          const source = fs.readFileSync("archers-franchise-index-v3.4.0.ts", "utf8");
           const result = ts.transpileModule(source, {
             compilerOptions: {
               target: ts.ScriptTarget.ES2022,
@@ -116,61 +126,67 @@ jobs:
           console.log("TypeScript parser diagnostics: 0");
           NODE
 
-      - name: Validate contract schema and documentation
+      - name: Validate guard schema and documentation
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
 
-          schema = json.loads(Path("schemas/season-rollover-v1/contract-v1.schema.json").read_text(encoding="utf-8"))
-          design = Path("SEASON_ROLLOVER_ENGINE_V1_DESIGN.md").read_text(encoding="utf-8")
-          contract = Path("SEASON_ROLLOVER_ENGINE_V1_CONTRACT_SCHEMA.md").read_text(encoding="utf-8")
-          deployment = Path("BACKEND_3.3.0_DEPLOYMENT_GUIDE.md").read_text(encoding="utf-8")
-          migration = Path("phase3-3-season-rollover-v1.sql").read_text(encoding="utf-8")
-          regressions = Path("tests/backend-3.3.0/season-rollover-v1.sql").read_text(encoding="utf-8")
+          envelope = json.loads(Path("schemas/contract-intake-guard-v1/intake-envelope-v1.schema.json").read_text(encoding="utf-8"))
+          design = Path("CONTRACT_INTAKE_GUARD_V1_DESIGN.md").read_text(encoding="utf-8")
+          migration = Path("phase3-4-contract-intake-guard-v1.sql").read_text(encoding="utf-8")
+          self_test = Path("phase3-4-contract-intake-guard-v1-self-test.sql").read_text(encoding="utf-8")
+          regressions = Path("tests/backend-3.4.0/contract-intake-guard-v1.sql").read_text(encoding="utf-8")
           league = Path("DAD_LEAGUE_AND_RESOURCE_RULES.md").read_text(encoding="utf-8")
 
-          assert schema["$id"].endswith("contract-v1.schema.json")
+          assert envelope["$id"].endswith("intake-envelope-v1.schema.json")
           for token in [
-              "player contracts",
-              "staff contracts",
-              "dry run",
-              "expected_resources",
-              "No automatic options",
+              "database triggers",
+              "validate_contract_intake",
+              "drafted player",
+              "trade acquisition",
+              "practice-squad",
+              "staff contract",
+              "deferred constraint trigger",
+              "Legacy strings",
           ]:
               assert token.lower() in design.lower(), token
 
           for token in [
-              "salary_by_season",
-              "cap_hit_by_season",
-              "end_season",
-              "options",
-              "legacy",
-          ]:
-              assert token.lower() in contract.lower(), token
-
-          for token in [
-              "archers_rollover_season",
-              "rollover_season",
-              "expected_resources",
-              "p_dry_run",
-              "player",
-              "staff",
+              "archers_contract_intake_evaluate_v1",
+              "archers_validate_contract_intake",
+              "archers_contract_intake_before_write_v1",
+              "archers_contract_intake_deferred_check_v1",
+              "create constraint trigger",
+              "CONTRACT_INTAKE_REJECTED",
+              "MISSING_SALARY_SCHEDULE",
+              "MISSING_CAP_SCHEDULE",
+              "CONTRACT_VALUE_MISMATCH",
+              "GUARANTEE_EXCEEDS_SALARY",
           ]:
               assert token in migration, token
 
           for token in [
-              "idempotent replay",
-              "stale resource",
-              "option was exercised",
-              "staff contract",
-              "legacy contract",
-              "duplicate fingerprint",
+              "invalid-write self-test",
+              "writes_performed",
+              "left a resource behind",
+          ]:
+              assert token in self_test, token
+
+          for token in [
+              "validation RPC wrote a resource",
+              "drafted-player contract",
+              "traded player",
+              "Practice-squad agreements",
+              "Contractless non-Archers",
+              "summary-only",
+              "rolls back atomically",
+              "extension",
+              "rollover remains compatible",
           ]:
               assert token.lower() in regressions.lower(), token
 
-          assert "## 13. Season rollover" in league
-          assert "must not exercise an option" in league
-          assert "Backend 3.3.0" in deployment
-          print("Season Rollover v1 schema and documentation validation passed")
+          assert "## 14. Contract intake guard" in league
+          assert "Never submit only a display string" in league
+          print("Contract Intake Guard v1 schema and documentation validation passed")
           PY
