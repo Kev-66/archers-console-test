@@ -138,7 +138,7 @@
           <article class="portal-card portal-squad-foundation">
             <div class="section-head"><div><h2>Squad Planner Outlook</h2><p>The first app-ready bridge into future positional planning.</p></div><span class="pill">Foundation</span></div>
             <div id="portal-outlook-list" class="portal-outlook-list"><div class="portal-loading">Calculating 2027 control…</div></div>
-            <button type="button" class="portal-inline-button" data-portal-route="roster" style="margin-top:12px">Open Roster</button>
+            <button type="button" class="portal-inline-button" data-portal-route="squadplanner" style="margin-top:12px">Open Squad Planner</button>
           </article>
         </section>
 
@@ -152,6 +152,7 @@
           <div class="portal-quick-grid">
             <button type="button" class="portal-quick-link" data-portal-route="weeklyops"><span class="portal-quick-icon">📋</span><strong>Weekly Ops</strong><span>Opponent, availability and the full Decision Queue.</span></button>
             <button type="button" class="portal-quick-link" data-portal-route="roster"><span class="portal-quick-icon">👥</span><strong>Roster</strong><span>Players, depth, practice squad and profile drawers.</span></button>
+            <button type="button" class="portal-quick-link" data-portal-route="squadplanner"><span class="portal-quick-icon">🧩</span><strong>Squad Planner</strong><span>Local, non-canon position-room and future-control planning.</span></button>
             <button type="button" class="portal-quick-link" data-portal-route="frontoffice"><span class="portal-quick-icon">🏢</span><strong>Front Office</strong><span>Contracts, cap, transactions and Trade Finder.</span></button>
             <button type="button" class="portal-quick-link" data-portal-route="gameday"><span class="portal-quick-icon">🏟️</span><strong>Game Day</strong><span>Live game operations and official reconciliation.</span></button>
             <button type="button" class="portal-quick-link" data-portal-route="league"><span class="portal-quick-icon">🗺️</span><strong>League</strong><span>Standings, scoreboard and confirmed alignment.</span></button>
