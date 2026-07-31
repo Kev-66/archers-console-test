@@ -1,0 +1,181 @@
+name: Backend 3.4.0 CI
+
+on:
+  push:
+    branches:
+      - agent/contract-intake-guard-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: postgres
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Bootstrap isolated database
+        run: psql -f tests/backend-3.2.0/bootstrap.sql
+
+      - name: Apply Backend 3.2.0 decision migration
+        run: psql -f phase3-2-atomic-decision-update.sql
+
+      - name: Run Backend 3.2.0 decision regressions
+        run: psql -f tests/backend-3.2.0/atomic-decision-update.sql
+
+      - name: Apply Season Rollover Engine v1 migration
+        run: psql -f phase3-3-season-rollover-v1.sql
+
+      - name: Run Season Rollover Engine regressions
+        run: psql -f tests/backend-3.3.0/season-rollover-v1.sql
+
+      - name: Apply Contract Intake Guard v1 migration
+        run: psql -f phase3-4-contract-intake-guard-v1.sql
+
+      - name: Run Contract Intake Guard regressions
+        run: psql -f tests/backend-3.4.0/contract-intake-guard-v1.sql
+
+      - name: Verify generated Edge sources
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+
+          versioned = Path("archers-franchise-index-v3.4.0.ts").read_bytes()
+          canonical = Path("edge-function-archers-franchise.ts").read_bytes()
+          assert versioned == canonical, "versioned and canonical Edge sources differ"
+
+          text = versioned.decode("utf-8")
+          required = [
+              'const BACKEND_VERSION = "3.4.0";',
+              '"rollover_season",',
+              '"validate_contract_intake",',
+              '"CONTRACT_INTAKE_VALIDATION"',
+              '"DATABASE_CONTRACT_INTAKE_GUARD"',
+              '"CANONICAL_CONTRACT_DERIVATION"',
+              '"CONTRACT_INTAKE_AT_DATABASE_BOUNDARY"',
+              '"DEFERRED_ROLLOVER_REVALIDATION"',
+              '"NO_LEGACY_CONTRACT_GUESSING"',
+              '"archers_validate_contract_intake"',
+              'validate_contract_intake is read-only and requires dry_run true',
+              'requested_operation: "upsert_resource"',
+              '"ATOMIC_SEASON_ROLLOVER"',
+              'readResourceRefsBatched',
+          ]
+          for token in required:
+              assert token in text, token
+
+          print("edge_source_sha256=" + hashlib.sha256(versioned).hexdigest())
+          print("edge_source_bytes=" + str(len(versioned)))
+          PY
+
+      - name: Parse TypeScript
+        run: |
+          npm install --no-save typescript@5.9.2
+          node - <<'NODE'
+          const fs = require("fs");
+          const ts = require("typescript");
+          const source = fs.readFileSync("archers-franchise-index-v3.4.0.ts", "utf8");
+          const result = ts.transpileModule(source, {
+            compilerOptions: {
+              target: ts.ScriptTarget.ES2022,
+              module: ts.ModuleKind.ESNext,
+            },
+            reportDiagnostics: true,
+          });
+          const diagnostics = result.diagnostics || [];
+          if (diagnostics.length) {
+            for (const diagnostic of diagnostics) {
+              console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
+            }
+            process.exit(1);
+          }
+          console.log("TypeScript parser diagnostics: 0");
+          NODE
+
+      - name: Validate guard schema and documentation
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          envelope = json.loads(Path("schemas/contract-intake-guard-v1/intake-envelope-v1.schema.json").read_text(encoding="utf-8"))
+          design = Path("CONTRACT_INTAKE_GUARD_V1_DESIGN.md").read_text(encoding="utf-8")
+          migration = Path("phase3-4-contract-intake-guard-v1.sql").read_text(encoding="utf-8")
+          regressions = Path("tests/backend-3.4.0/contract-intake-guard-v1.sql").read_text(encoding="utf-8")
+          league = Path("DAD_LEAGUE_AND_RESOURCE_RULES.md").read_text(encoding="utf-8")
+
+          assert envelope["$id"].endswith("intake-envelope-v1.schema.json")
+          for token in [
+              "database triggers",
+              "validate_contract_intake",
+              "drafted player",
+              "trade acquisition",
+              "practice-squad",
+              "staff contract",
+              "deferred constraint trigger",
+              "Legacy strings",
+          ]:
+              assert token.lower() in design.lower(), token
+
+          for token in [
+              "archers_contract_intake_evaluate_v1",
+              "archers_validate_contract_intake",
+              "archers_contract_intake_before_write_v1",
+              "archers_contract_intake_deferred_check_v1",
+              "create constraint trigger",
+              "CONTRACT_INTAKE_REJECTED",
+              "MISSING_SALARY_SCHEDULE",
+              "MISSING_CAP_SCHEDULE",
+              "CONTRACT_VALUE_MISMATCH",
+              "GUARANTEE_EXCEEDS_SALARY",
+          ]:
+              assert token in migration, token
+
+          for token in [
+              "validation RPC wrote a resource",
+              "drafted-player contract",
+              "traded player",
+              "Practice-squad agreements",
+              "Contractless non-Archers",
+              "summary-only",
+              "rolls back atomically",
+              "extension",
+              "rollover remains compatible",
+          ]:
+              assert token.lower() in regressions.lower(), token
+
+          assert "## 14. Contract intake guard" in league
+          assert "Never submit only a display string" in league
+          print("Contract Intake Guard v1 schema and documentation validation passed")
+          PY
