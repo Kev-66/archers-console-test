@@ -1,0 +1,40 @@
+name: Opponent Package Branch Bootstrap
+
+on:
+  push:
+    branches:
+      - agent/baltimore-opponent-package
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    if: ${{ github.event.head_commit.message == 'Install opponent package files from verified archive' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/baltimore-opponent-package
+
+      - name: Verify and extract approved package
+        run: |
+          set -euo pipefail
+          base64 --decode .opponent-package-bootstrap.tar.gz.b64 > /tmp/opponent-package-bootstrap.tar.gz
+          echo 'b3b7ed4d23ea8829c15155046da3a4f1e62136ddec10cd296e62c930edf1b2b9  /tmp/opponent-package-bootstrap.tar.gz' | sha256sum --check
+          tar -xzf /tmp/opponent-package-bootstrap.tar.gz
+          rm -f .opponent-package-bootstrap.tar.gz.b64
+          rm -f opponent-package-bootstrap.trigger
+          rm -f .github/workflows/opponent-package-bootstrap.yml
+          rm -f .github/workflows/baltimore-opponent-context.yml
+          rm -f scripts/read_baltimore_opponent_context.py
+
+      - name: Commit package files
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add full Baltimore Week Three opponent package'
+          git push origin HEAD:agent/baltimore-opponent-package
