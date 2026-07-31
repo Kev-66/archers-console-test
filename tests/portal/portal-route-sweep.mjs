@@ -5,7 +5,7 @@ const baseUrl = process.env.PORTAL_BASE_URL ?? "http://127.0.0.1:4173";
 const outputDirectory = process.env.PORTAL_EVIDENCE_DIR ?? "portal-browser-evidence";
 await fs.mkdir(outputDirectory, { recursive: true });
 
-const routes = ["weeklyops", "gameday", "roster", "frontoffice", "league", "schedule", "archive"];
+const routes = ["weeklyops", "gameday", "roster", "squadplanner", "frontoffice", "league", "schedule", "archive"];
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 960 }, colorScheme: "dark" });
 const page = await context.newPage();

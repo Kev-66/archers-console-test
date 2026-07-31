@@ -96,7 +96,7 @@ try {
   if (snapshot.compatibilityAnchors !== 15) {
     throw new Error(`Expected 15 compatibility anchors, found ${snapshot.compatibilityAnchors}`);
   }
-  for (const route of ["weeklyops", "roster", "frontoffice", "gameday", "league", "schedule", "archive"]) {
+  for (const route of ["weeklyops", "roster", "squadplanner", "frontoffice", "gameday", "league", "schedule", "archive"]) {
     if (!snapshot.quickRoutes.includes(route)) throw new Error(`Quick Launch route missing: ${route}`);
   }
 

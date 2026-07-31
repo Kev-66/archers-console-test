@@ -1,0 +1,73 @@
+name: Squad Planner v1 CI
+
+on:
+  push:
+    branches:
+      - agent/squad-planner-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Parse Squad Planner JavaScript
+        run: |
+          node --check phase4-squad-planner.js
+          node --check tests/squad-planner/squad-planner-dom-smoke.js
+          node --check tests/squad-planner/squad-planner-live-browser.mjs
+
+      - name: Run Squad Planner static regressions
+        run: python tests/squad-planner/squad-planner-v1-static.py
+
+      - name: Run Squad Planner DOM smoke test
+        run: |
+          npm install --no-save jsdom@24.1.3
+          node tests/squad-planner/squad-planner-dom-smoke.js
+
+  live-browser:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Chromium validation dependencies
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Start branch console server
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/squad-planner-http.log 2>&1 &
+          echo $! > /tmp/squad-planner-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/index-phase3.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/squad-planner-http.log
+          exit 1
+
+      - name: Run live read-only Squad Planner validation
+        env:
+          PLANNER_BASE_URL: http://127.0.0.1:4173
+          PLANNER_EVIDENCE_DIR: squad-planner-browser-evidence
+        run: node tests/squad-planner/squad-planner-live-browser.mjs
+
+      - name: Upload Squad Planner browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: squad-planner-browser-${{ github.run_id }}
+          path: squad-planner-browser-evidence
+          if-no-files-found: warn
+          retention-days: 14

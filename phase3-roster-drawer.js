@@ -205,8 +205,10 @@
     document.querySelectorAll(".roster-player-row").forEach((row) => {
       row.tabIndex = 0;
       row.setAttribute("role", "button");
-      const name = row.querySelector(".roster-player-cell strong")?.textContent ?? "player";
-      row.setAttribute("aria-label", `Open profile for ${name}`);
+      const name = row.querySelector(".roster-player-cell strong")?.textContent
+        ?? row.closest(".squad-player-card")?.querySelector(".squad-player-name")?.textContent
+        ?? "player";
+      if (!row.hasAttribute("aria-label")) row.setAttribute("aria-label", `Open profile for ${name}`);
     });
   };
 
