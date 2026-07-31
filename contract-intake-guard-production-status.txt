@@ -1,4 +1,25 @@
-run_id=30594985888
-job_status=failure
-source_commit=218c6184a40e65d49436f63b3e982afc01e54780
-deployment_summary=unavailable
+run_id=30595693402
+job_status=success
+source_commit=e3b74b2bc4bc8e988d70bb4692cc099f70acdecc
+deployment_summary=
+{
+  "audit_row_created": false,
+  "backend_version": "3.4.0",
+  "canon_event_created": false,
+  "existing_contract_blockers": 0,
+  "existing_contract_warnings": 24,
+  "existing_player_contracts_validated": 69,
+  "existing_staff_contracts_validated": 16,
+  "guarded_upsert_preview_accepted": true,
+  "legacy_summary_contract_rejected": true,
+  "real_personnel_transaction_executed": false,
+  "real_season_rollover_executed": false,
+  "rollover_blocker_count": 0,
+  "rollover_processable_contracts": 85,
+  "rollover_ready_to_execute": true,
+  "season": 2026,
+  "state_version_after": 37,
+  "state_version_before": 37,
+  "test_resources_created": false,
+  "valid_hypothetical_contract_accepted": true
+}
