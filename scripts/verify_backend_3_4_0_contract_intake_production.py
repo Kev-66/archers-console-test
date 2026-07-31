@@ -147,8 +147,8 @@ for validation in validations:
     assert int(validation["blocker_count"]) == 0, validation
     assert validation["contract_fingerprint"], validation
 
-valid_id = f"__contract-intake-valid-{RUN_ID}__"
-invalid_id = f"__contract-intake-invalid-{RUN_ID}__"
+valid_id = f"contract-intake-valid-{RUN_ID}"
+invalid_id = f"contract-intake-invalid-{RUN_ID}"
 valid_data = {
     "player_name": "Contract Intake Validation Player",
     "team_id": "stl-2026",
