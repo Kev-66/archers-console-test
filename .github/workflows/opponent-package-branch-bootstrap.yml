@@ -43,8 +43,6 @@ jobs:
           rm -rf .bootstrap
           rm -f .opponent-package-bootstrap.tar.gz.b64
           rm -f opponent-package-bootstrap.trigger
-          rm -f .github/workflows/opponent-package-bootstrap.yml
-          rm -f .github/workflows/baltimore-opponent-context.yml
           rm -f scripts/read_baltimore_opponent_context.py
 
       - name: Commit package files
